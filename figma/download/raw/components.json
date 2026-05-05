@@ -1,0 +1,1055 @@
+{
+  "4:2059": {
+    "key": "0f2cb6d176be3bf76915c07a203bbaf15e0c5396",
+    "name": "Header",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "4:1930": {
+    "key": "086448cfb2061dff7b04b7894f088183f558eedb",
+    "name": "Property 1=Projects_Unselected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1940",
+    "documentationLinks": []
+  },
+  "4:1957": {
+    "key": "5142d6aad1c655231bf22506d4741fd68da6c46b",
+    "name": "Property 1=Header_Arrow",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1940",
+    "documentationLinks": []
+  },
+  "4:1969": {
+    "key": "303cac467312d0530aeddecc416c03a24c9099f7",
+    "name": "Property 1=User_Profile",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1940",
+    "documentationLinks": []
+  },
+  "4:1495": {
+    "key": "740ea4fd36446bb5c06db6571f214cc453ab6253",
+    "name": "HR Side Page",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "3:952": {
+    "key": "24aa911e980ababab0e84b0d2eb39b2641cee11c",
+    "name": "Property 1=Tool_Name",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1970",
+    "documentationLinks": []
+  },
+  "3:961": {
+    "key": "7c66732b121c7b08fe846669f0cc380b87a67687",
+    "name": "Button=Rejection Follow Up",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1970",
+    "documentationLinks": []
+  },
+  "290:2310": {
+    "key": "3463e5e5abc2edd4a7bc5faf2195b023b9f322c3",
+    "name": "New Project",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "4:2109": {
+    "key": "3c54c740753a010c4954f67bce68012b0e2f00aa",
+    "name": "Property 1=Project_Title",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2081",
+    "documentationLinks": []
+  },
+  "4:2102": {
+    "key": "478473a16c0b05d1c60e733c013f1577ac43bf22",
+    "name": "Stamp=Active",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "4:1965": {
+    "key": "e2d513b1a0283886be5e98e523918efbd72b28db",
+    "name": "Property 1=Search_Bar",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1940",
+    "documentationLinks": []
+  },
+  "292:2758": {
+    "key": "816d6584d3eabb165f81428a7b6687fcb679ab77",
+    "name": "Others=Notes",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "4:1939": {
+    "key": "7b776babdb4fea16a661aef81dcf00789c188d6a",
+    "name": "Property 1=Projects_Selected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1940",
+    "documentationLinks": []
+  },
+  "293:3668": {
+    "key": "593e76998c778bafa5853a9c3cdd0b9d500fcc80",
+    "name": "Button=Rejection Follow Up_Selected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:1970",
+    "documentationLinks": []
+  },
+  "4:2080": {
+    "key": "b7b235f38a39cb5829264d562b56c3330d7c3068",
+    "name": "Property 1=Edit_Project",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2081",
+    "documentationLinks": []
+  },
+  "4:2118": {
+    "key": "baf1732ca4eb7f238adf73680fd02067bdb39eb3",
+    "name": "Property 1=Candidate_Search",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2081",
+    "documentationLinks": []
+  },
+  "283:4188": {
+    "key": "781396dceedd50f74ca8ffa0e8d012432423079c",
+    "name": "Stamp=Archived",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "333:4254": {
+    "key": "8325d5350e7128d71a844e6272ac28f1cb66df5f",
+    "name": "Stamp=Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "413:14954": {
+    "key": "32c6bf500532a313a652aaee7f896f851b19c5c3",
+    "name": "Stamp=Offer Sent",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "413:15121": {
+    "key": "997267b58002a61dee43e23e7c767393cba9161f",
+    "name": "Stamp=Approved for Offer",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "348:5016": {
+    "key": "34c1cb1d7faf4441bb2b41a823bbb81a9e955fe7",
+    "name": "Stamp=Not_Reached",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "395:5892": {
+    "key": "63a65098c92e944ab60550e51b8d2e15725c026d",
+    "name": "Stamp=Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "348:5344": {
+    "key": "b565fa42f50c19ca929069b7a5bc046798c1640e",
+    "name": "Stamp=Waiting_For_Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "348:5473": {
+    "key": "da77df26d0215fa3d943c624dad09dde3413a7f7",
+    "name": "Stamp=Withdrawn",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "413:15127": {
+    "key": "e51a4555a9b0d47ce5ff5bc9adf032a72729ed92",
+    "name": "Stamp=Offer Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "538:11199": {
+    "key": "8ab73db0a2072e249f1e0194d99f89619b424f78",
+    "name": "Stamp=Offer_Waitlisted",
+    "description": "",
+    "remote": false,
+    "componentSetId": "4:2103",
+    "documentationLinks": []
+  },
+  "274:203": {
+    "key": "8b1835bf663b2efb6a98ae70d736d97af51157b7",
+    "name": "Stage=Unselected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "274:97",
+    "documentationLinks": []
+  },
+  "274:210": {
+    "key": "9f18d077eb45c69c379c3dd889892492e62527ce",
+    "name": "Stage=Selected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "274:97",
+    "documentationLinks": []
+  },
+  "274:96": {
+    "key": "f0a149c5f812df93d312f408da8bb386c6643ab5",
+    "name": "Pipeline",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "276:1143": {
+    "key": "205b65e805830af218aab0a1c16c4b735fda8989",
+    "name": "Pipeline_Cells=Candidate_Name",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "276:1145": {
+    "key": "70b4d3db0597a2c906a3ad74de2c8da9ce384d6c",
+    "name": "Pipeline_Cells=Status",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "276:1150": {
+    "key": "fd4075bb033a6d5f91079340bf7a03d816cf9c23",
+    "name": "Pipeline_Cells=Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "276:1153": {
+    "key": "a49f1d9b9efa0a9a2d5ab7d2dc9d3dbd72de227d",
+    "name": "Pipeline_Cells=Interview_Info",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "276:1156": {
+    "key": "7667cf96d185dfbe9a5139df87877f910272be5b",
+    "name": "Pipeline_Cells=Actions",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "276:1160": {
+    "key": "f293a701076d48c2a534d6c838aabe7a1438370f",
+    "name": "Pipeline_Cells=Notes",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "292:3102": {
+    "key": "9efd0e872cd179d9b16c817422d3d3cc4d8ec058",
+    "name": "Rejection_Cells=Project Name",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "292:3105": {
+    "key": "2dae38d818bc87c2a4cfdab9f976fcb9b9e2e069",
+    "name": "Rejection_Cells=Reason Eligible",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "292:3108": {
+    "key": "d5888c8fe284e4e88a7d2dc88c929c5e7ba6fea2",
+    "name": "Rejection_Cells=Eligible Date",
+    "description": "",
+    "remote": false,
+    "componentSetId": "276:1144",
+    "documentationLinks": []
+  },
+  "277:1230": {
+    "key": "99472c08759b30f55979e283b20527ce858be325",
+    "name": "Header=Interview",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "470:16163": {
+    "key": "7ee2892bfd28bdb8f14939c907715518b41b3d8a",
+    "name": "Header=HM",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "282:3840": {
+    "key": "a1f6920bfd1a3f6cf80b7460aa56082b2695d368",
+    "name": "Header=Offer_Decision",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "292:3092": {
+    "key": "fbe266cf0b243d7260932684b7cc05313690d042",
+    "name": "Header=Rejection",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "277:1232": {
+    "key": "a09a8149c4037fbf273c5b5405e909a587e4f2ee",
+    "name": "Header=Manager_Review",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "406:5049": {
+    "key": "37e0f1ff8251b99ab75cc75095eb09d3e1445f5b",
+    "name": "Header=Manager",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "411:8958": {
+    "key": "84724ee90d36bc13c986166363dbae039ab51675",
+    "name": "Header=HM_Review",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "412:14130": {
+    "key": "077ecf195aa27a0996d565c69d0e755cf168b2d2",
+    "name": "Header=HM_Offer",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1231",
+    "documentationLinks": []
+  },
+  "277:1289": {
+    "key": "eb30a8534dc6d815945c878b238cebf261a51b31",
+    "name": "Candidate=1",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1308": {
+    "key": "657d49570c294c3757cd23afbf25b20545b78241",
+    "name": "Candidate=2",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1318": {
+    "key": "ce4750458202c01bf385e41bf186ccb5452e5779",
+    "name": "Candidate=3",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1328": {
+    "key": "2182068cbc58c0899ecd29dd67ac241a82711845",
+    "name": "Candidate=4",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1338": {
+    "key": "6395953501ed69c4fa085b40350078d06cb4923c",
+    "name": "Candidate=5",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1348": {
+    "key": "f98ed86fdb701659408960de317fb83f396f1f83",
+    "name": "Candidate=6",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1354": {
+    "key": "77e835141e66157b76bd7c2e2cbeab02785a0041",
+    "name": "Status=Waiting_For_Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "282:4040": {
+    "key": "2c77f66f8e3f8e19a06e81bb79d864b9807e62f7",
+    "name": "Offer=Sent",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "392:2169": {
+    "key": "5ff2dbdef2d2b3d366544ab491a38333cac03de4",
+    "name": "Offer=Accepted",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "282:4045": {
+    "key": "7ae2dec8a7d47ee29f29c729e4d113348e60042f",
+    "name": "Offer=Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "542:14230": {
+    "key": "57ccee188c7edb02686963a89dcb3bc3b8c873e9",
+    "name": "Status=Rejection_Handled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "538:11189": {
+    "key": "472ce89ef243f385335d0848c82546d9aa769688",
+    "name": "Offer=Waitlisted",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "392:2174": {
+    "key": "9a709aba298468ea53c3fccd9000502f217fbb95",
+    "name": "Offer=Waiting",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "392:2470": {
+    "key": "26777b1ee1c0a4f325ef54ae7f65a6550d40538d",
+    "name": "Offer=Okay",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1360": {
+    "key": "70df8808be5830807f5795423c9fcca03883e60f",
+    "name": "Status=Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1366": {
+    "key": "cd4b941ae3c2f8d697a1a0accba2ce48bd1976d7",
+    "name": "Status=Not_Reached",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1372": {
+    "key": "a45ce3db814ea6bfce7b00a356d08380665dd554",
+    "name": "Status=Withdrawn",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "392:2161": {
+    "key": "78fd92337c0edf457163afbc80d42bc72a4862b8",
+    "name": "Status=Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1376": {
+    "key": "828f1fb566c9f5f99953ed80c0da5fe6e5bbd27c",
+    "name": "Logo=Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1391": {
+    "key": "8d47060174d2fd883b814ca1cf0e4c7137e24f8a",
+    "name": "Interview=Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1395": {
+    "key": "48f23338239cbdf71e9e1a55a8a60e99982560dd",
+    "name": "Interview=Not_Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1399": {
+    "key": "5377c5917a346b61bcff6581a7e8ca9764e72287",
+    "name": "Interview=Terminated",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1403": {
+    "key": "2244335309d5eec575eebdb371e5c34f76ee114e",
+    "name": "Button=Add_Log",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1409": {
+    "key": "78cc4192aa42e64c00c832c47d9d95601389dc38",
+    "name": "Button=View",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1601": {
+    "key": "0df2627caf5cc16b9764f6653bb9a74f3fcce4d5",
+    "name": "Footer=Footer",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "281:2922": {
+    "key": "127c4587b7436b40f32c42f25acd28db79fca788",
+    "name": "Notes=Blank",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1290",
+    "documentationLinks": []
+  },
+  "277:1557": {
+    "key": "af64ffaec66a3899c7b51891da8da675d5e7b3bb",
+    "name": "Candidate=Waiting_for_Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "281:2923": {
+    "key": "5b393754d95890707881f25671c73d024a30bc54",
+    "name": "Candidate=Manager_Review",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "281:2918": {
+    "key": "bef4ecf2c9433976d3d6006675fca444dc725f2b",
+    "name": "Pipeline_Table_Data/Rejected",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "280:1982": {
+    "key": "f03b3a7e0adcc7a13fc02f8a71dc80c09c5f64c5",
+    "name": "Candidate=Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "280:2125": {
+    "key": "6b6e4f2fefeb010df399e590186cd161b1abae9d",
+    "name": "Candidate=Not_Reached",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "401:10750": {
+    "key": "6404dccb6ef9f4e75067972e918f2286c4017f0b",
+    "name": "Candidate=HM",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "401:11100": {
+    "key": "d6928eaf633c1611d7e63158ead13f795e97c846",
+    "name": "Candidate=HM_Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "282:3811": {
+    "key": "90d59597a6846fa37581eac03603052a4f2f9f07",
+    "name": "Candidate=Offer",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "412:14138": {
+    "key": "1c59428191d8c92e8aa0130e25554589f24c10c2",
+    "name": "Candidate=HM_Offer",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "411:9031": {
+    "key": "76ab617e106e9ee2e9c31f012fd34b2496ea46f0",
+    "name": "Candidate=HM_Review",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "292:3129": {
+    "key": "e193911bd3eb153f35cfbc1217aad8e6c30ef065",
+    "name": "Candidate=Rejection",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "280:2181": {
+    "key": "0dd75df4a148812be9499a3620a820821712fcd1",
+    "name": "Candidate=HR_Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "538:10843": {
+    "key": "5e379f222ec8019ea55dfcfd16de0ed3dd0ef73b",
+    "name": "Candidate=HM_Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "538:9987": {
+    "key": "2e3b1030f9e4a6dd399f8927f60f3128f0716f8e",
+    "name": "Candidate=Withdrawn",
+    "description": "",
+    "remote": false,
+    "componentSetId": "277:1558",
+    "documentationLinks": []
+  },
+  "277:1705": {
+    "key": "372b493dc3ad94e68776fa4072826c1ee995c32f",
+    "name": "Pipeline_Content",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "281:2254": {
+    "key": "3a89bad814096561e596b693d43d9d3bf1de7f68",
+    "name": "Pipeline Table",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "283:4162": {
+    "key": "cff68b02226fdc169d4f47e481aa396c2b55efdf",
+    "name": "Project=Active",
+    "description": "",
+    "remote": false,
+    "componentSetId": "283:4163",
+    "documentationLinks": []
+  },
+  "283:4180": {
+    "key": "b15c39580457b617d94d61286a47715c2c3d5945",
+    "name": "Project=New_Project",
+    "description": "",
+    "remote": false,
+    "componentSetId": "283:4163",
+    "documentationLinks": []
+  },
+  "283:4181": {
+    "key": "b012b0031967f88259d3b500551c9064fbaef977",
+    "name": "Project=Archive",
+    "description": "",
+    "remote": false,
+    "componentSetId": "283:4163",
+    "documentationLinks": []
+  },
+  "287:1887": {
+    "key": "5e6324ce1811316ce5298bd172a1887413a3cffc",
+    "name": "Project Page",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "292:2794": {
+    "key": "fd273e21a4a9817328432b28548b1f10eac9a953",
+    "name": "Log_Contact_Attempt",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "291:2595": {
+    "key": "2c0add6ca5f6559e3ebcb08b4d33efa3831f3292",
+    "name": "Selection=Not_Reached",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "292:2738": {
+    "key": "216a454671f943e90b48470de89cbc2d7bc2e25f",
+    "name": "Others=Attempt Date & Time",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "536:4581": {
+    "key": "aacc2cecbb73fd5d3baab7f87a59569f957f156b",
+    "name": "Others=Interview_Info",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "292:2787": {
+    "key": "80b31efed175cd5f5e907a39878416f552eb8891",
+    "name": "Button=Cancel",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "292:2775": {
+    "key": "b9cf15a32b75313dfca5ca3ad8e9babc8e7023e0",
+    "name": "Button=Save",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "291:2673": {
+    "key": "b5d048441da0325aee88412f648bbd1c204f1427",
+    "name": "Selection=Withdrawn",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "291:2593": {
+    "key": "ed31c3c458d0ab7eb076bfca9d35507ff236fcfe",
+    "name": "Selection=Scheduled",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "292:3074": {
+    "key": "f33c795fce4cbaf6885708b429faee96bbcd4a21",
+    "name": "Others=Filter",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "413:14701": {
+    "key": "e9201ea2c6c40391edf1fa42fb0dae7a1d417871",
+    "name": "Others=Offer Candidate",
+    "description": "",
+    "remote": false,
+    "componentSetId": "291:2594",
+    "documentationLinks": []
+  },
+  "293:3297": {
+    "key": "8dd92b8ca1ec194f10ff4f40156571fdf228d363",
+    "name": "Rejection_Follow_Up",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "348:4258": {
+    "key": "a0d68cb0d7ecb4793cd46a87656b4f15639791da",
+    "name": "Property 1=Candidate Name",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4260": {
+    "key": "70566065c0b41100ea058bc087d2504d040eb081",
+    "name": "Button=Resume",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4259": {
+    "key": "4aafd41ee0d6626090544f10cece855352a25d2e",
+    "name": "Button=Linkedin",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4301": {
+    "key": "56c3c665ebfe0d84cd1247037d7e1440022ba089",
+    "name": "Button=Log_Contact",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4343": {
+    "key": "d845211ca476e9da3c944f7afafb3c445c8799d6",
+    "name": "Button=Copy_URL",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4347": {
+    "key": "11a6a1b7506c1c70a9120e540460711973ca50a3",
+    "name": "Property 1=Meeting_Name",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4362": {
+    "key": "3c528cfbc5b2485b2e6a2c009093c9403ce801df",
+    "name": "Meeting=Meeting_Details",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4459": {
+    "key": "b85b924f1769587adcfb11fc7b5dec9895681166",
+    "name": "History=Successfull",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:5496": {
+    "key": "58d82d029bb13a48972187ec1f07c2ad1727b091",
+    "name": "History=Withdrawn",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "395:2944": {
+    "key": "409208ac5e0a9aadd0a91f24b2ef5ae491571ec1",
+    "name": "History=Interview",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "395:5896": {
+    "key": "21aba7973c9b0c6d8723bff26de7449ba6072db2",
+    "name": "History=Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4469": {
+    "key": "63ae7e499d9d0179b65181d5d63613b0c46bf605",
+    "name": "History=Fail",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "395:2934": {
+    "key": "cc82612277d7e3ca0970941daf9c320374fe14fb",
+    "name": "History=Profile",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "413:15786": {
+    "key": "b8ebc465c5d9d5f7d226bec110234cf883aa84f4",
+    "name": "History=Offer Sent",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "413:15796": {
+    "key": "6ff05c680654a4240dd4f6047abfda8028beadd0",
+    "name": "History=Offer Rejected",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "538:11424": {
+    "key": "e5915e7658005d2c581d6d475816ecf8e3ffc314",
+    "name": "History=Offer_Waitlisted",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "394:2625": {
+    "key": "74ff0f20c59f6b3b33b8525db0671aa70946b187",
+    "name": "Button=Info",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "541:12162": {
+    "key": "e2a61d82cb06e93192f8f56c34692e5334936347",
+    "name": "Button=Offer ",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4300": {
+    "key": "07b64f616fce688336786fdb9cf4daaa954aaf0d",
+    "name": "Button=Note",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "395:3812": {
+    "key": "47a2b7136a5af664efd229e88a7d3db34ddd1624",
+    "name": "Property 1=Note_Owner",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "406:2989": {
+    "key": "31599c0329f2c1f6c02f6ba7f823c0be60a79b90",
+    "name": "Button=Process",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "542:14216": {
+    "key": "46bca1f0dc3aa60d1fedb4cdae57725eb8a5fee8",
+    "name": "Button=Rejection Handling",
+    "description": "",
+    "remote": false,
+    "componentSetId": "348:4261",
+    "documentationLinks": []
+  },
+  "348:4315": {
+    "key": "3e79632df205d3d1f04ae9769251f91c61df8d07",
+    "name": "Quick_Actions",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "348:4369": {
+    "key": "b752800683682487106027e1552d1c942146830f",
+    "name": "Interview_Details",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "348:4488": {
+    "key": "e98cf9d5b12a853e5d1ef44f29b748799100f9fe",
+    "name": "Activity_History",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "348:4895": {
+    "key": "09951dcbc77e7f205746c6c0a4e9a8c366832446",
+    "name": "Candidate_Detail_Header",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "395:3816": {
+    "key": "495d11749a4cd6774ee3d3c950716066f9cdf675",
+    "name": "Notes Section",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "395:3976": {
+    "key": "ee49121d4d6ade5b34821fdafd355da987252f89",
+    "name": "Contact Card",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "397:6439": {
+    "key": "e9f2c4e70a4708303f11f004e0ac008fee819504",
+    "name": "Edit Project",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "413:14689": {
+    "key": "5b8c1294170d7e60e6848c462d1a3250544ea574",
+    "name": "Offer List",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  },
+  "542:14391": {
+    "key": "be85e22e2bc9f827cb25946a9bbf868050d57496",
+    "name": "Rejection_Pop-Up",
+    "description": "",
+    "remote": false,
+    "documentationLinks": []
+  }
+}

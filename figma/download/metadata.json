@@ -1,0 +1,21 @@
+{
+  "importedAt": "2026-05-05T07:50:03.505Z",
+  "fileKey": "LHyUdgdBN0WcaM11le8BVY",
+  "fileName": "Candidate Tracker",
+  "lastModified": "2026-05-05T07:44:27Z",
+  "version": "2350000354519166012",
+  "nodeCount": 17778,
+  "typeCounts": {
+    "CANVAS": 3,
+    "COMPONENT": 133,
+    "FRAME": 7941,
+    "INSTANCE": 3027,
+    "TEXT": 5251,
+    "VECTOR": 1193,
+    "RECTANGLE": 218,
+    "COMPONENT_SET": 12
+  },
+  "componentCount": 134,
+  "componentSetCount": 12,
+  "stylesCount": 0
+}

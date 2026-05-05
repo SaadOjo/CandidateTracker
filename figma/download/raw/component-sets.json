@@ -1,0 +1,74 @@
+{
+  "4:1940": {
+    "key": "01a9d64226dc33c81df860b55579cc407229168c",
+    "name": "Header_Buttons",
+    "description": "",
+    "documentationLinks": []
+  },
+  "4:1970": {
+    "key": "007171c0faf749596bcdd2e41da92c9a235aeb63",
+    "name": "Side_Bar",
+    "description": "",
+    "documentationLinks": []
+  },
+  "4:2081": {
+    "key": "59712016327bd8ca71387ad33ca4b310b72e2bbf",
+    "name": "Pipeline_Content",
+    "description": "",
+    "documentationLinks": []
+  },
+  "4:2103": {
+    "key": "2118be4ab9c8e6fc51ebbc64878002880caf8a3a",
+    "name": "Status_Stamp",
+    "description": "",
+    "documentationLinks": []
+  },
+  "291:2594": {
+    "key": "be3e30c68fc2056f0dc4e939ce57e35e948c6811",
+    "name": "Pop_Up_Contents",
+    "description": "",
+    "documentationLinks": []
+  },
+  "274:97": {
+    "key": "2d39ff596e4fcf9567105ccd6ebc04db6d48d61c",
+    "name": "Pipeline_Stages",
+    "description": "",
+    "documentationLinks": []
+  },
+  "276:1144": {
+    "key": "24a7336bbdd748f4bdfe6c5d4e12788280542205",
+    "name": "Pipeline_Table",
+    "description": "",
+    "documentationLinks": []
+  },
+  "277:1231": {
+    "key": "cf3d2d38e626cc98f2dffe48d0e9b10e57f1d3f9",
+    "name": "Pipeline_Table_Header",
+    "description": "",
+    "documentationLinks": []
+  },
+  "277:1290": {
+    "key": "e3b4829b1a15eab53abc9ac231bdae2880c6d37c",
+    "name": "Pipeline_Table_Data",
+    "description": "",
+    "documentationLinks": []
+  },
+  "277:1558": {
+    "key": "a332ced3f5d1497a3679dac410550e55017c3107",
+    "name": "Pipeline_Candidate_Row",
+    "description": "",
+    "documentationLinks": []
+  },
+  "283:4163": {
+    "key": "fef9385d9a49afb78b8ef2aa7b9c41317163ee7f",
+    "name": "Project_Box",
+    "description": "",
+    "documentationLinks": []
+  },
+  "348:4261": {
+    "key": "0b1996534c70496af6c0ff36dc113259cc3a5c99",
+    "name": "Candidate_Detail",
+    "description": "",
+    "documentationLinks": []
+  }
+}
