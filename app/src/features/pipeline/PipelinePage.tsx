@@ -50,7 +50,7 @@ export function PipelinePage() {
         <div className="figma-table-row figma-table-header">
           <span>Candidate Name</span>
           <span>Status</span>
-          <span>Contact</span>
+          <span className="contact-column-header">Contact</span>
           <span>Interview Info</span>
           <span>Actions</span>
         </div>
@@ -62,7 +62,7 @@ export function PipelinePage() {
               <div><strong>{candidate.name.replace('.', '')}</strong><small>{candidate.appliedAgo}</small></div>
             </div>
             <StatusDot status={candidate.status} />
-            <Phone className="phone-icon" size={22} strokeWidth={1.8} />
+            <div className="contact-cell"><Phone className="phone-icon" size={22} strokeWidth={1.8} /></div>
             <InterviewCell candidate={candidate} />
             <div className="row-actions">
               <Link className="outline-button" to={`/projects/${projectId}/candidates/${candidate.id}`}>View</Link>

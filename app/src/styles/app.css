@@ -103,6 +103,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .status-dot--waiting_for_contact { color: #8a9295; font-weight: 600; }
 .status-dot--approved_for_offer, .status-dot--offer_sent, .status-dot--offer_accepted { color: #005bc2; }
 .status-dot--waitlisted { color: #946200; }
+.contact-column-header, .contact-cell { display: flex; justify-content: center; }
 .phone-icon { color: #758083; }
 .interview-cell { display: grid; text-align: center; color: #171719; line-height: 17px; }
 .interview-cell small { color: #666; font-size: 12px; }
