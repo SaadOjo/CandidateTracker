@@ -2,9 +2,9 @@ import type { CandidateStatus, PipelineStage, ProjectStatus } from './types'
 
 export const stageLabels: Record<PipelineStage, string> = {
   department_interview: '1. Department Interview',
-  hr_interview: 'HR Interview',
-  manager_review: 'Manager Review',
-  offer_stage: 'Offer Stage',
+  hr_interview: '2. HR Interview',
+  manager_review: '3. Manager Review',
+  offer_stage: '4. Offer Stage',
 }
 
 export const stageOrder: PipelineStage[] = [

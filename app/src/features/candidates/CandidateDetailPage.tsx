@@ -1,6 +1,7 @@
-import { CalendarCheck, ChevronDown, Clock3, FileText, Link as LinkIcon, NotebookPen, Phone, RotateCcw } from 'lucide-react'
+import { ChevronDown, FileText, Link as LinkIcon, NotebookPen, Phone, RotateCcw, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import { type AppOutletContext } from '../../components/layout/AppLayout'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { candidateTrackerRepository } from '../../data/repository'
@@ -9,6 +10,7 @@ import { ContactCardModal } from './ContactCardModal'
 import { LogContactAttemptModal } from './LogContactAttemptModal'
 
 export function CandidateDetailPage() {
+  const { role } = useOutletContext<AppOutletContext>()
   const { projectId = '', candidateId = '' } = useParams()
   const [searchParams] = useSearchParams()
   const [candidate, setCandidate] = useState<Candidate>()
@@ -36,12 +38,12 @@ export function CandidateDetailPage() {
           </div>
         </div>
 
-        <InterviewPanel candidate={candidate} />
+        {candidate.notes.length > 0 && <InternalNotes candidate={candidate} />}
         <ActivityHistory candidate={candidate} />
       </section>
 
       <aside className="candidate-detail-side">
-        <QuickActions closeTo={closeTo} />
+        <QuickActions closeTo={closeTo} role={role} stage={candidate.stage} />
       </aside>
     </div>
     {searchParams.get('modal') === 'contact-card' && <ContactCardModal candidate={candidate} closeTo={closeTo} />}
@@ -51,43 +53,60 @@ export function CandidateDetailPage() {
   )
 }
 
-function InterviewPanel({ candidate }: { candidate: Candidate }) {
-  if (candidate.interview) {
-    return (
-      <section className="interview-detail-card">
-        <CalendarCheck className="watermark" size={58} />
-        <span className="eyebrow icon-label"><CalendarCheck size={13} /> {candidate.interview.title}</span>
-        <h2>{candidate.interview.date}</h2>
-        <p>{candidate.interview.time} ({candidate.interview.timezone})</p>
-        <button className="dark-button copy-button">Copy Meeting URL</button>
-      </section>
-    )
-  }
-
-  if (candidate.status === 'not_reached') {
-    return <section className="interview-detail-card"><span className="eyebrow icon-label"><Clock3 size={13} /> Contact follow-up required</span><h2>Candidate not reached</h2><p>Log the next attempt or schedule an interview when contact is made.</p><button className="dark-button copy-button">Log Contact Attempt</button></section>
-  }
-
-  if (candidate.status === 'rejected') {
-    return <section className="interview-detail-card rejected-panel"><span className="eyebrow icon-label"><FileText size={13} /> REJECTION FOLLOW-UP</span><h2>Rejected</h2><p>Process candidate communication and rejection tracking.</p><Link className="dark-button copy-button" to={`?modal=rejection-contact`}>Process</Link></section>
-  }
-
-  return <section className="interview-detail-card"><span className="eyebrow icon-label"><Clock3 size={13} /> Waiting for Contact</span><h2>No interview scheduled</h2><p>Use quick actions to contact the candidate or move them forward.</p></section>
+function InternalNotes({ candidate }: { candidate: Candidate }) {
+  return (
+    <section className="notes-section">
+      <h2><i />Internal Notes</h2>
+      <div className="notes-stack">
+        {candidate.notes.map((note) => (
+          <article className="note-card" key={note.id}>
+            <div className="note-card-header">
+              <span>{note.author}</span>
+              <time>{note.createdAt}</time>
+            </div>
+            <p>{note.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
 }
 
-function QuickActions({ closeTo }: { closeTo: string }) {
+function QuickActions({ closeTo, role, stage }: { closeTo: string; role: AppOutletContext['role']; stage: Candidate['stage'] }) {
+  const [processOpen, setProcessOpen] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
+
   return (
     <section className="quick-actions-card">
-      <span className="eyebrow">Quick Actions</span>
-      <Link to={`${closeTo}?modal=contact-card`}><Phone size={16} /> Contact Info</Link>
-      <Link to={`${closeTo}?modal=log-contact`}><RotateCcw size={16} /> Log Contact Attempt</Link>
-      <button><NotebookPen size={16} /> Add Note <ChevronDown className="push" size={16} /></button>
+      <span className="eyebrow">QUICK ACTIONS</span>
+      {role === 'hr' && <Link to={`${closeTo}?modal=contact-card`}><Phone size={16} /> Contact Info</Link>}
+      {role === 'hr' && <Link to={`${closeTo}?modal=log-contact`}><RotateCcw size={16} /> Log Contact Attempt</Link>}
+      <div className="quick-action-group">
+        <button onClick={() => setNoteOpen((open) => !open)}><NotebookPen size={16} /> Add Note <ChevronDown className={`push ${noteOpen ? 'chevron-open' : ''}`} size={16} /></button>
+        {noteOpen && <div className="quick-note-box">
+          <textarea placeholder="Type your note here..." />
+          <div className="quick-note-actions">
+            <button className="quick-note-save">Save</button>
+            <button className="quick-note-cancel" onClick={() => setNoteOpen(false)}>Cancel</button>
+          </div>
+        </div>}
+      </div>
+      {role === 'hm' && stage === 'manager_review' && (
+        <div className="quick-action-group">
+          <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
+          {processOpen && <div className="quick-action-menu">
+            <button>Approve for Offer</button>
+            <button>Waitlist</button>
+            <button>Reject</button>
+          </div>}
+        </div>
+      )}
     </section>
   )
 }
 
 function ActivityHistory({ candidate }: { candidate: Candidate }) {
-  const visible = candidate.activity.slice(-3).reverse()
+  const visible = [...candidate.activity].reverse()
   return (
     <section className="activity-section">
       <h2><i />Activity History</h2>
@@ -95,7 +114,7 @@ function ActivityHistory({ candidate }: { candidate: Candidate }) {
         {visible.map((item) => (
           <li key={item.id}>
             <span className="activity-index">{item.index}</span>
-            <div><strong className={item.tone ?? ''}>{item.title}</strong><small>{item.subtitle}</small></div>
+            <div><strong className={item.tone ?? ''}>{item.title}</strong>{item.subtitle && <small>{item.subtitle}</small>}</div>
             <time>{item.date ?? item.title}</time>
           </li>
         ))}

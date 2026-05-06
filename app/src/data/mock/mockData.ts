@@ -56,6 +56,17 @@ const baseActivity = [
   { id: 'a3', index: '03', title: 'Department Interview Scheduled', subtitle: 'Contact Attempt 2', date: 'Apr 09, 2024', tone: 'success' as const },
 ]
 
+const departmentInterviewActivity = [
+  ...baseActivity,
+  { id: 'a4', index: '04', title: 'Department Interview', date: 'Apr 09, 2024', tone: 'stage' as const },
+]
+
+const hrInterviewActivity = [
+  ...departmentInterviewActivity,
+  { id: 'a5', index: '05', title: 'HR Interview Scheduled', subtitle: 'Contact Attempt 3', date: 'Apr 10, 2024', tone: 'success' as const },
+  { id: 'a6', index: '06', title: 'HR Interview', date: 'Apr 11, 2024', tone: 'stage' as const },
+]
+
 export const mockCandidates: Candidate[] = [
   {
     id: 'c-sara',
@@ -117,7 +128,7 @@ export const mockCandidates: Candidate[] = [
     status: 'rejected',
     appliedAgo: 'Applied 3h ago',
     contactAttempts: 0,
-    activity: [...baseActivity.slice(0, 1), { id: 'a6', index: '02', title: 'Rejected', subtitle: 'Screening outcome', date: 'Apr 10, 2024', tone: 'danger' as const }],
+    activity: [...departmentInterviewActivity, { id: 'a7', index: '05', title: 'Rejected by Hiring Manager', subtitle: 'Screening outcome', date: 'Apr 10, 2024', tone: 'danger' as const }],
     notes: [],
   },
   {
@@ -129,8 +140,98 @@ export const mockCandidates: Candidate[] = [
     status: 'withdrawn',
     appliedAgo: 'Applied 2w ago',
     contactAttempts: 3,
-    activity: [...baseActivity, { id: 'a7', index: '04', title: 'Withdrawn', subtitle: 'Candidate withdrew', date: 'Apr 12, 2024' }],
+    activity: [...baseActivity, { id: 'a8', index: '04', title: 'Withdrawn', subtitle: 'Candidate withdrew', date: 'Apr 12, 2024', tone: 'neutral' as const }],
     notes: [],
+  },
+  {
+    id: 'c-hr-sara',
+    projectId: 'p-designer',
+    name: 'Mina T.',
+    source: 'LinkedIn',
+    stage: 'hr_interview',
+    status: 'waiting_for_contact',
+    appliedAgo: 'Applied 2d ago',
+    contactAttempts: 2,
+    activity: departmentInterviewActivity,
+    notes: [
+      {
+        id: 'n-hr-sara-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 10, 2024 • 11:20 AM',
+        body: 'Completed department interview. Moving candidate forward for HR interview outreach.',
+      },
+    ],
+  },
+  {
+    id: 'c-hr-li',
+    projectId: 'p-designer',
+    name: 'Derya N.',
+    source: 'LinkedIn',
+    stage: 'hr_interview',
+    status: 'scheduled',
+    appliedAgo: 'Applied 1w ago',
+    contactAttempts: 3,
+    interview: {
+      title: 'Scheduled HR Interview',
+      date: 'Friday, Apr 12',
+      time: '10:00 AM — 11:00 AM',
+      timezone: 'GST',
+      meetingUrl: 'https://meet.example.com/hr-li-a',
+    },
+    activity: [...departmentInterviewActivity, { id: 'a11', index: '05', title: 'HR Interview Scheduled', subtitle: 'Contact Attempt 3', date: 'Apr 10, 2024', tone: 'success' as const }],
+    notes: [
+      {
+        id: 'n2',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 11, 2024 • 02:40 PM',
+        body: 'Reviewing the case study she sent. The system architecture looks clean but want to drill down into her prototyping process during the Dept Interview.',
+      },
+    ],
+  },
+  {
+    id: 'c-hr-omar',
+    projectId: 'p-designer',
+    name: 'Kerem S.',
+    source: 'LinkedIn',
+    stage: 'hr_interview',
+    status: 'not_reached',
+    appliedAgo: 'Applied 5d ago',
+    contactAttempts: 2,
+    activity: departmentInterviewActivity,
+    notes: [
+      {
+        id: 'n-hr-omar-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 10, 2024 • 09:10 AM',
+        body: 'Department interview complete. Candidate asked for a later HR interview slot.',
+      },
+    ],
+  },
+  {
+    id: 'c-hr-ayca',
+    projectId: 'p-designer',
+    name: 'Selin A.',
+    source: 'LinkedIn',
+    stage: 'hr_interview',
+    status: 'rejected',
+    appliedAgo: 'Applied 2w ago',
+    contactAttempts: 3,
+    interview: {
+      title: 'Scheduled HR Interview',
+      date: 'Monday, Apr 01',
+      time: '02:00 PM — 03:00 PM',
+      timezone: 'GST',
+      meetingUrl: 'https://meet.example.com/hr-ayca',
+    },
+    activity: [...hrInterviewActivity, { id: 'a12', index: '07', title: 'Rejected by Hiring Manager', subtitle: 'Post-HR interview review', date: 'Apr 12, 2024', tone: 'danger' as const }],
+    notes: [
+      {
+        id: 'n-hr-ayca-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 12, 2024 • 01:30 PM',
+        body: 'Candidate completed HR interview but was not selected after final review.',
+      },
+    ],
   },
   {
     id: 'c-efekan',
@@ -141,8 +242,15 @@ export const mockCandidates: Candidate[] = [
     status: 'waitlisted',
     appliedAgo: 'Applied 3h ago',
     contactAttempts: 2,
-    activity: baseActivity,
-    notes: [],
+    activity: hrInterviewActivity,
+    notes: [
+      {
+        id: 'n-efekan-1',
+        author: 'HR Manager',
+        createdAt: 'Apr 11, 2024 • 04:15 PM',
+        body: 'HR interview completed successfully. Candidate remains under manager review.',
+      },
+    ],
   },
   {
     id: 'c-marcus',
@@ -153,20 +261,15 @@ export const mockCandidates: Candidate[] = [
     status: 'rejected',
     appliedAgo: 'Applied 4d ago',
     contactAttempts: 2,
-    activity: baseActivity,
-    notes: [],
-  },
-  {
-    id: 'c-nora',
-    projectId: 'p-designer',
-    name: 'Nora H',
-    source: 'LinkedIn',
-    stage: 'offer_stage',
-    status: 'approved_for_offer',
-    appliedAgo: 'Applied 2w ago',
-    contactAttempts: 4,
-    activity: baseActivity,
-    notes: [],
+    activity: [...hrInterviewActivity, { id: 'a9', index: '07', title: 'Rejected by Hiring Manager', subtitle: 'Manager review outcome', date: 'Apr 12, 2024', tone: 'danger' as const }],
+    notes: [
+      {
+        id: 'n-marcus-1',
+        author: 'HR Manager',
+        createdAt: 'Apr 11, 2024 • 05:10 PM',
+        body: 'HR interview completed. Final decision moved to hiring manager review.',
+      },
+    ],
   },
   {
     id: 'c-kaan',
@@ -177,7 +280,71 @@ export const mockCandidates: Candidate[] = [
     status: 'offer_sent',
     appliedAgo: 'Applied 3w ago',
     contactAttempts: 5,
-    activity: baseActivity,
-    notes: [],
+    activity: [...hrInterviewActivity, { id: 'a10', index: '07', title: 'Offer Sent', subtitle: 'Awaiting candidate response', date: 'Apr 14, 2024', tone: 'success' as const }],
+    notes: [
+      {
+        id: 'n-kaan-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 14, 2024 • 09:00 AM',
+        body: 'Offer sent after successful interview process. Waiting for candidate response.',
+      },
+    ],
+  },
+  {
+    id: 'c-nora',
+    projectId: 'p-designer',
+    name: 'Nora H',
+    source: 'LinkedIn',
+    stage: 'offer_stage',
+    status: 'approved_for_offer',
+    appliedAgo: 'Applied 2w ago',
+    contactAttempts: 4,
+    activity: hrInterviewActivity,
+    notes: [
+      {
+        id: 'n-nora-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 12, 2024 • 10:40 AM',
+        body: 'Candidate passed both interview rounds and was approved for offer consideration.',
+      },
+    ],
+  },
+  {
+    id: 'c-omer-offer',
+    projectId: 'p-designer',
+    name: 'Omer T.',
+    source: 'LinkedIn',
+    stage: 'offer_stage',
+    status: 'approved_for_offer',
+    appliedAgo: 'Applied 5d ago',
+    contactAttempts: 4,
+    activity: hrInterviewActivity,
+    notes: [
+      {
+        id: 'n-omer-offer-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 13, 2024 • 03:20 PM',
+        body: 'Candidate approved for offer queue as a backup option after final review.',
+      },
+    ],
+  },
+  {
+    id: 'c-lizzy-offer',
+    projectId: 'p-designer',
+    name: 'Lizzy J.',
+    source: 'Referral',
+    stage: 'offer_stage',
+    status: 'offer_rejected',
+    appliedAgo: 'Applied 3h ago',
+    contactAttempts: 4,
+    activity: [...hrInterviewActivity, { id: 'a13', index: '07', title: 'Offer Rejected', subtitle: 'Candidate declined the offer', date: 'Apr 15, 2024', tone: 'danger' as const }],
+    notes: [
+      {
+        id: 'n-lizzy-offer-1',
+        author: 'Hiring Manager',
+        createdAt: 'Apr 15, 2024 • 04:10 PM',
+        body: 'Candidate rejected the offer after the final compensation discussion.',
+      },
+    ],
   },
 ]

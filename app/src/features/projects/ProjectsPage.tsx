@@ -1,6 +1,7 @@
 import { ArrowRight, Download, Pencil, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { type AppOutletContext } from '../../components/layout/AppLayout'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { candidateTrackerRepository } from '../../data/repository'
 import type { Project } from '../../domain/types'
@@ -11,6 +12,7 @@ interface ProjectsPageProps {
 }
 
 export function ProjectsPage({ modal }: ProjectsPageProps) {
+  const { role } = useOutletContext<AppOutletContext>()
   const { projectId } = useParams()
   const [projects, setProjects] = useState<Project[]>([])
 
@@ -30,7 +32,7 @@ export function ProjectsPage({ modal }: ProjectsPageProps) {
 
       <div className="figma-project-grid">
         {active.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard key={project.id} project={project} role={role} />
         ))}
 
         <Link className="figma-project-card archive-card" to="/projects">
@@ -42,13 +44,13 @@ export function ProjectsPage({ modal }: ProjectsPageProps) {
           </div>
         </Link>
 
-        <Link className="figma-project-card new-project-card" to="/projects/new">
+        {role === 'hr' && <Link className="figma-project-card new-project-card" to="/projects/new">
           <div className="plus-tile"><Plus size={24} /></div>
           <div>
             <h3>Launch New Project</h3>
             <p>Ready to scale your team?</p>
           </div>
-        </Link>
+        </Link>}
       </div>
     </div>
     {modal === 'new' && <ProjectFormModal mode="create" closeTo="/projects" />}
@@ -57,10 +59,22 @@ export function ProjectsPage({ modal }: ProjectsPageProps) {
   )
 }
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project, role }: { project: Project; role: AppOutletContext['role'] }) {
+  const navigate = useNavigate()
+
   return (
-    <article className="figma-project-card">
-      <Link className="card-hit-area" to={`/projects/${project.id}/pipeline/department_interview`} aria-label={`Open ${project.name}`} />
+    <article
+      className="figma-project-card figma-project-card--clickable"
+      role="link"
+      tabIndex={0}
+      onClick={() => navigate(`/projects/${project.id}/pipeline/department_interview`)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          navigate(`/projects/${project.id}/pipeline/department_interview`)
+        }
+      }}
+    >
       <StatusBadge type="project" status={project.status} />
       <ArrowRight className="card-corner" size={22} />
       <div>
@@ -69,7 +83,7 @@ function ProjectCard({ project }: { project: Project }) {
       </div>
       <div className="project-card-footer">
         <span className="avatar-stack"><span className="avatar avatar-sm">S</span><span className="count-pill">+{project.candidateCount}</span></span>
-        <Link className="edit-project" to={`/projects/${project.id}/edit`}><Pencil size={13} /> Edit Project</Link>
+        {role === 'hr' && <Link className="edit-project" to={`/projects/${project.id}/edit`} onClick={(event) => event.stopPropagation()}><Pencil size={13} /> Edit Project</Link>}
       </div>
     </article>
   )

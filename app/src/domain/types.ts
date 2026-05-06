@@ -46,7 +46,7 @@ export interface ActivityItem {
   title: string
   subtitle?: string
   date?: string
-  tone?: 'success' | 'warning' | 'danger' | 'neutral'
+  tone?: 'success' | 'warning' | 'danger' | 'neutral' | 'stage'
 }
 
 export interface Note {

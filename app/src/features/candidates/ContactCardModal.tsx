@@ -28,7 +28,10 @@ export function ContactCardModal({ candidate, closeTo }: Props) {
           </div>
         </div>
 
-        <button className="copy-info-button">Copy Info</button>
+        <div className="contact-card-actions">
+          <button className="copy-info-button">Copy Phone Number</button>
+          <button className="copy-info-button copy-info-button--secondary">Copy Email Address</button>
+        </div>
       </div>
     </ModalOverlay>
   )
