@@ -12,6 +12,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/projects" replace />} />
         <Route path="projects" element={<ProjectsPage />} />
+        <Route path="projects/archived" element={<ProjectsPage view="archived" />} />
         <Route path="projects/new" element={<ProjectsPage modal="new" />} />
         <Route path="projects/:projectId/edit" element={<ProjectsPage modal="edit" />} />
         <Route path="projects/:projectId/pipeline/:stage" element={<PipelinePage />} />

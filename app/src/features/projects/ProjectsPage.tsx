@@ -1,4 +1,4 @@
-import { ArrowRight, Download, Pencil, Plus } from 'lucide-react'
+import { ArrowRight, Download, Pencil, Plus, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { type AppOutletContext } from '../../components/layout/AppLayout'
@@ -9,9 +9,10 @@ import { ProjectFormModal } from './ProjectFormModal'
 
 interface ProjectsPageProps {
   modal?: 'new' | 'edit'
+  view?: 'default' | 'archived'
 }
 
-export function ProjectsPage({ modal }: ProjectsPageProps) {
+export function ProjectsPage({ modal, view = 'default' }: ProjectsPageProps) {
   const { role } = useOutletContext<AppOutletContext>()
   const { projectId } = useParams()
   const [projects, setProjects] = useState<Project[]>([])
@@ -23,28 +24,29 @@ export function ProjectsPage({ modal }: ProjectsPageProps) {
   const active = projects.filter((project) => project.status === 'active')
   const archived = projects.filter((project) => project.status === 'archived')
   const selectedProject = projects.find((project) => project.id === projectId)
+  const visibleProjects = view === 'archived' ? archived : active
 
   return (
     <>
     <div className="projects-screen">
-      <h1>Projects</h1>
-      <div className="search-input"><span>⌕</span><input aria-label="Search project" placeholder="Search project..." /></div>
+      <h1>{view === 'archived' ? 'Archived Projects' : 'Projects'}</h1>
+      <div className="search-input projects-search"><Search size={20} strokeWidth={2} /><input aria-label="Search project" placeholder={view === 'archived' ? 'Search archived project...' : 'Search project...'} /></div>
 
-      <div className="figma-project-grid">
-        {active.map((project) => (
+      <div className={`figma-project-grid ${view === 'archived' ? 'figma-project-grid--archived' : ''}`}>
+        {visibleProjects.map((project) => (
           <ProjectCard key={project.id} project={project} role={role} />
         ))}
 
-        <Link className="figma-project-card archive-card" to="/projects">
+        {view === 'default' && <Link className="figma-project-card archive-card" to="/projects/archived">
           <StatusBadge type="project" status="archived" />
           <Download className="card-corner" size={20} />
           <div>
             <h3>Archived Projects ({archived.length})</h3>
             <p>View previously completed<br />hiring projects.</p>
           </div>
-        </Link>
+        </Link>}
 
-        {role === 'hr' && <Link className="figma-project-card new-project-card" to="/projects/new">
+        {view === 'default' && role === 'hr' && <Link className="figma-project-card new-project-card" to="/projects/new">
           <div className="plus-tile"><Plus size={24} /></div>
           <div>
             <h3>Launch New Project</h3>

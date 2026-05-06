@@ -41,7 +41,9 @@ export function PipelinePage() {
         <p>Position: {project?.position ?? 'Senior Product Designer'}</p>
       </section>
 
-      <div className="search-input candidate-search"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search candidate name..." /></div>
+      <div className="pipeline-search-row">
+        <div className="search-input candidate-search"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search candidate name..." /></div>
+      </div>
 
       <nav className="figma-stage-tabs">
         {stageOrder.map((item) => (
@@ -63,13 +65,14 @@ export function PipelinePage() {
         {candidates.map((candidate, index) => (
           <div className={`figma-table-row figma-table-row--${selectedStage} figma-table-row--role-${role}`} key={candidate.id}>
             {columns.includes('candidate') && <Link className="candidate-cell candidate-cell-link" to={`/projects/${projectId}/candidates/${candidate.id}`}>
+              {showOfferReorder(role, selectedStage, candidate.status) && <span className="order-handle order-handle--inline" aria-hidden="true">≡</span>}
               <Avatar name={candidate.name} />
               <div>
                 {selectedStage === 'offer_stage' && getOfferRankLabel(index) && <small className="offer-rank-label">{getOfferRankLabel(index)}</small>}
                 <strong>{candidate.name.replace('.', '')}</strong><small>{candidate.appliedAgo}</small>
               </div>
             </Link>}
-            {columns.includes('status') && <StatusDot status={candidate.status} />}
+            {columns.includes('status') && <StatusCell candidate={candidate} stage={selectedStage} />}
             {columns.includes('contact') && renderContactCell(selectedStage, closeTo, candidate, index)}
             {columns.includes('interview') && <InterviewCell candidate={candidate} />}
             {columns.includes('actions') && <div className="row-actions">
@@ -92,7 +95,9 @@ type PipelineColumn = 'candidate' | 'status' | 'contact' | 'interview' | 'action
 
 function getStageColumns(role: AppOutletContext['role'], stage: PipelineStage): PipelineColumn[] {
   if (role === 'hm') {
-    return ['candidate', 'status', 'actions']
+    if (stage === 'manager_review') return ['candidate', 'status', 'interview', 'actions']
+    if (stage === 'offer_stage') return ['candidate', 'status', 'actions']
+    return ['candidate', 'status', 'interview', 'actions']
   }
 
   if (stage === 'manager_review') return ['candidate', 'status']
@@ -102,6 +107,10 @@ function getStageColumns(role: AppOutletContext['role'], stage: PipelineStage): 
 
 function showAddLog(role: AppOutletContext['role'], stage: PipelineStage, status: CandidateStatus) {
   return role === 'hr' && stage !== 'offer_stage' && status !== 'rejected' && status !== 'withdrawn'
+}
+
+function showOfferReorder(role: AppOutletContext['role'], stage: PipelineStage, status: CandidateStatus) {
+  return role === 'hm' && stage === 'offer_stage' && status === 'approved_for_offer'
 }
 
 function getOfferRankLabel(index: number) {
@@ -116,10 +125,19 @@ function renderContactCell(stage: PipelineStage, closeTo: string, candidate: Can
   return <Link className="contact-cell" to={`${closeTo}?modal=contact-card&candidateId=${candidate.id}`} aria-label={`Open contact info for ${candidate.name.replace('.', '')}`}><Phone className="phone-icon" size={22} strokeWidth={1.8} /></Link>
 }
 
+function StatusCell({ candidate, stage }: { candidate: Candidate; stage: PipelineStage }) {
+  if (stage === 'manager_review' && candidate.status === 'waiting_for_contact') return <span className="muted-text">--</span>
+  return <StatusDot status={candidate.status} />
+}
+
 function InterviewCell({ candidate }: { candidate: Candidate }) {
   if (candidate.status === 'withdrawn') return <span className="muted-text">Terminated</span>
   if (!candidate.interview) return <span className="muted-text">--</span>
-  return <span className="interview-cell"><strong>Apr 15</strong><small>02:00 PM</small></span>
+
+  const shortDate = candidate.interview.date.replace(/^\w+,\s*/, '')
+  const shortTime = candidate.interview.time.split('—')[0].trim()
+
+  return <span className="interview-cell"><strong>{shortDate}</strong><small>{shortTime}</small></span>
 }
 
 function StatusDot({ status }: { status: CandidateStatus }) {

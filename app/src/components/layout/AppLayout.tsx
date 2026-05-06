@@ -6,7 +6,7 @@ import { stageLabels } from '../../domain/labels'
 import type { Candidate, PipelineStage, Project, Role } from '../../domain/types'
 
 function Breadcrumbs() {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const parts = pathname.split('/').filter(Boolean)
   const projectId = parts[1]
   const candidateId = parts[3]
@@ -34,6 +34,16 @@ function Breadcrumbs() {
     return <span className="crumb active">Projects</span>
   }
 
+  if (pathname === '/projects/archived') {
+    return (
+      <>
+        <Link className="crumb" to="/projects">Projects</Link>
+        <ChevronRight size={14} />
+        <span className="crumb active">Archived Projects</span>
+      </>
+    )
+  }
+
   if (pathname === '/rejection-follow-up') {
     return <span className="crumb active">Rejection Follow-up</span>
   }
@@ -51,6 +61,18 @@ function Breadcrumbs() {
 
   if (parts[0] === 'projects' && parts[2] === 'candidates') {
     const candidateStage = candidate?.stage ?? 'department_interview'
+    const source = new URLSearchParams(search).get('source')
+
+    if (source === 'rejection') {
+      return (
+        <>
+          <Link className="crumb" to="/rejection-follow-up">Rejection Follow-up</Link>
+          <ChevronRight size={14} />
+          <span className="crumb active">{candidate?.name ?? 'Candidate'}</span>
+        </>
+      )
+    }
+
     return (
       <>
         <Link className="crumb" to="/projects">Projects</Link>

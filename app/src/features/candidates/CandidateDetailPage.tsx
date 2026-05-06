@@ -1,4 +1,4 @@
-import { ChevronDown, FileText, Link as LinkIcon, NotebookPen, Phone, RotateCcw, Search } from 'lucide-react'
+import { CalendarDays, ChevronDown, Copy, FileText, Link as LinkIcon, NotebookPen, Phone, RotateCcw, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
 import { type AppOutletContext } from '../../components/layout/AppLayout'
@@ -21,7 +21,10 @@ export function CandidateDetailPage() {
 
   if (!candidate) return <EmptyState title="Candidate not found" />
 
-  const closeTo = `/projects/${projectId}/candidates/${candidate.id}`
+  const source = searchParams.get('source')
+  const closeTo = source === 'rejection'
+    ? `/projects/${projectId}/candidates/${candidate.id}?source=rejection`
+    : `/projects/${projectId}/candidates/${candidate.id}`
 
   return (
     <>
@@ -38,18 +41,36 @@ export function CandidateDetailPage() {
           </div>
         </div>
 
+        {candidate.status === 'scheduled' && candidate.interview && <ScheduledInterviewCard candidate={candidate} />}
         {candidate.notes.length > 0 && <InternalNotes candidate={candidate} />}
         <ActivityHistory candidate={candidate} />
       </section>
 
       <aside className="candidate-detail-side">
-        <QuickActions closeTo={closeTo} role={role} stage={candidate.stage} />
+        <QuickActions closeTo={closeTo} role={role} candidate={candidate} source={source} />
       </aside>
     </div>
     {searchParams.get('modal') === 'contact-card' && <ContactCardModal candidate={candidate} closeTo={closeTo} />}
     {searchParams.get('modal') === 'log-contact' && <LogContactAttemptModal candidate={candidate} closeTo={closeTo} />}
     {searchParams.get('modal') === 'rejection-contact' && <LogContactAttemptModal candidate={candidate} closeTo={closeTo} kind="rejection" />}
     </>
+  )
+}
+
+function ScheduledInterviewCard({ candidate }: { candidate: Candidate }) {
+  const interview = candidate.interview
+  if (!interview) return null
+
+  return (
+    <section className="scheduled-interview-card">
+      <div className="scheduled-interview-icon"><CalendarDays size={18} /></div>
+      <div className="scheduled-interview-copy">
+        <strong>{interview.title}</strong>
+        <p>{interview.date}</p>
+        <p>{interview.time} · {interview.timezone}</p>
+      </div>
+      {interview.meetingUrl && <button className="copy-meeting-button" onClick={() => navigator.clipboard.writeText(interview.meetingUrl ?? '')}><Copy size={14} /> Copy Meeting URL</button>}
+    </section>
   )
 }
 
@@ -72,15 +93,20 @@ function InternalNotes({ candidate }: { candidate: Candidate }) {
   )
 }
 
-function QuickActions({ closeTo, role, stage }: { closeTo: string; role: AppOutletContext['role']; stage: Candidate['stage'] }) {
+function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; role: AppOutletContext['role']; candidate: Candidate; source: string | null }) {
   const [processOpen, setProcessOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
+  const [offerOpen, setOfferOpen] = useState(false)
+  const queryPrefix = closeTo.includes('?') ? '&' : '?'
+
+  if (source !== 'rejection' && (candidate.status === 'rejected' || candidate.status === 'withdrawn')) return null
 
   return (
     <section className="quick-actions-card">
       <span className="eyebrow">QUICK ACTIONS</span>
-      {role === 'hr' && <Link to={`${closeTo}?modal=contact-card`}><Phone size={16} /> Contact Info</Link>}
-      {role === 'hr' && <Link to={`${closeTo}?modal=log-contact`}><RotateCcw size={16} /> Log Contact Attempt</Link>}
+      {role === 'hr' && source !== 'rejection' && <Link to={`${closeTo}${queryPrefix}modal=contact-card`}><Phone size={16} /> Contact Info</Link>}
+      {role === 'hr' && source !== 'rejection' && candidate.stage !== 'offer_stage' && <Link to={`${closeTo}${queryPrefix}modal=log-contact`}><RotateCcw size={16} /> Log Contact Attempt</Link>}
+      {role === 'hr' && source === 'rejection' && <Link to={`${closeTo}${queryPrefix}modal=rejection-contact`}><RotateCcw size={16} /> Rejection Handling</Link>}
       <div className="quick-action-group">
         <button onClick={() => setNoteOpen((open) => !open)}><NotebookPen size={16} /> Add Note <ChevronDown className={`push ${noteOpen ? 'chevron-open' : ''}`} size={16} /></button>
         {noteOpen && <div className="quick-note-box">
@@ -91,13 +117,33 @@ function QuickActions({ closeTo, role, stage }: { closeTo: string; role: AppOutl
           </div>
         </div>}
       </div>
-      {role === 'hm' && stage === 'manager_review' && (
+      {role === 'hm' && candidate.stage === 'manager_review' && (
         <div className="quick-action-group">
           <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
           {processOpen && <div className="quick-action-menu">
             <button>Approve for Offer</button>
             <button>Waitlist</button>
-            <button>Reject</button>
+            <button className="quick-action-danger">Reject</button>
+          </div>}
+        </div>
+      )}
+      {role === 'hr' && candidate.stage === 'hr_interview' && candidate.status === 'scheduled' && source !== 'rejection' && (
+        <div className="quick-action-group">
+          <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
+          {processOpen && <div className="quick-action-menu">
+            <button>Move to Manager Review</button>
+            <button className="quick-action-danger">Reject</button>
+          </div>}
+        </div>
+      )}
+      {role === 'hr' && candidate.stage === 'offer_stage' && source !== 'rejection' && (
+        <div className="quick-action-group">
+          <button onClick={() => setOfferOpen((open) => !open)}><Search size={16} /> Offer Handling <ChevronDown className={`push ${offerOpen ? 'chevron-open' : ''}`} size={16} /></button>
+          {offerOpen && <div className="quick-action-menu">
+            {candidate.status === 'approved_for_offer' && <button>Send Offer</button>}
+            {candidate.status === 'offer_sent' && <><button className="quick-action-accent">Offer Accepted</button><button className="quick-action-danger">Offer Rejected</button></>}
+            {candidate.status === 'offer_rejected' && <button>Offer Rejected</button>}
+            {candidate.status === 'offer_accepted' && <button>Offer Accepted</button>}
           </div>}
         </div>
       )}
