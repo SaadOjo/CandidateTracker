@@ -31,6 +31,12 @@ export function PipelinePage() {
   const closeTo = `/projects/${projectId}/pipeline/${selectedStage}`
 
   const columns = getStageColumns(role, selectedStage)
+  const visibleCandidates = [...candidates].sort((left, right) => {
+    if (selectedStage !== 'manager_review') return 0
+    const leftPending = left.status === 'waiting_for_contact' ? 0 : 1
+    const rightPending = right.status === 'waiting_for_contact' ? 0 : 1
+    return leftPending - rightPending
+  })
 
   return (
     <>
@@ -62,7 +68,7 @@ export function PipelinePage() {
           {columns.includes('actions') && <span className="column-header">Actions</span>}
         </div>
 
-        {candidates.map((candidate, index) => (
+        {visibleCandidates.map((candidate, index) => (
           <div className={`figma-table-row figma-table-row--${selectedStage} figma-table-row--role-${role}`} key={candidate.id}>
             {columns.includes('candidate') && <Link className="candidate-cell candidate-cell-link" to={`/projects/${projectId}/candidates/${candidate.id}`}>
               {showOfferReorder(role, selectedStage, candidate.status) && <span className="order-handle order-handle--inline" aria-hidden="true">≡</span>}
@@ -82,7 +88,7 @@ export function PipelinePage() {
           </div>
         ))}
 
-        <footer className="figma-table-footer"><span>Showing {candidates.length} of {project?.candidateCount ?? 42} candidates</span><span className="pager">‹ <b>1</b> 2 3 ›</span></footer>
+        <footer className="figma-table-footer"><span>Showing {visibleCandidates.length} of {project?.candidateCount ?? 42} candidates</span><span className="pager">‹ <b>1</b> 2 3 ›</span></footer>
       </section>
     </div>
     {searchParams.get('modal') === 'contact-card' && modalCandidate && <ContactCardModal candidate={modalCandidate} closeTo={closeTo} />}
@@ -95,7 +101,7 @@ type PipelineColumn = 'candidate' | 'status' | 'contact' | 'interview' | 'action
 
 function getStageColumns(role: AppOutletContext['role'], stage: PipelineStage): PipelineColumn[] {
   if (role === 'hm') {
-    if (stage === 'manager_review') return ['candidate', 'status', 'interview', 'actions']
+    if (stage === 'manager_review') return ['candidate', 'status', 'actions']
     if (stage === 'offer_stage') return ['candidate', 'status', 'actions']
     return ['candidate', 'status', 'interview', 'actions']
   }

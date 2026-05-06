@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { candidateTrackerRepository } from '../../data/repository'
 import type { Candidate, Project } from '../../domain/types'
 
-type RejectionStatusFilter = 'all' | 'not_reached' | 'handled'
+type RejectionStatusFilter = 'all' | 'waiting_for_contact' | 'handled'
 
 export function RejectionFollowUpPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -27,7 +27,7 @@ export function RejectionFollowUpPage() {
     return candidates
       .map((candidate) => ({
         candidate,
-        status: candidate.id === 'c-marcus' ? 'handled' : 'not_reached' as RejectionStatusFilter,
+        status: candidate.id === 'c-marcus' ? 'handled' : 'waiting_for_contact' as RejectionStatusFilter,
       }))
       .filter(({ candidate, status }) => {
         if (normalizedQuery && !candidate.name.toLowerCase().includes(normalizedQuery)) return false
@@ -50,10 +50,10 @@ export function RejectionFollowUpPage() {
           </div>}
         </div>
         <div className="rejection-filter-wrap">
-          <button onClick={() => setStatusMenuOpen((open) => !open)}>Status: {statusFilter === 'all' ? 'All' : statusFilter === 'not_reached' ? 'Not Reached' : 'Rejection Handled'} <ChevronDown size={16} /></button>
+          <button onClick={() => setStatusMenuOpen((open) => !open)}>Status: {statusFilter === 'all' ? 'All' : statusFilter === 'waiting_for_contact' ? 'Waiting for Contact' : 'Rejection Handled'} <ChevronDown size={16} /></button>
           {statusMenuOpen && <div className="rejection-filter-menu">
             <button className={statusFilter === 'all' ? 'active' : ''} onClick={() => { setStatusFilter('all'); setStatusMenuOpen(false) }}>Status: All</button>
-            <button className={statusFilter === 'not_reached' ? 'active' : ''} onClick={() => { setStatusFilter('not_reached'); setStatusMenuOpen(false) }}>Not Reached</button>
+            <button className={statusFilter === 'waiting_for_contact' ? 'active' : ''} onClick={() => { setStatusFilter('waiting_for_contact'); setStatusMenuOpen(false) }}>Waiting for Contact</button>
             <button className={statusFilter === 'handled' ? 'active' : ''} onClick={() => { setStatusFilter('handled'); setStatusMenuOpen(false) }}>Rejection Handled</button>
           </div>}
         </div>
@@ -67,7 +67,7 @@ export function RejectionFollowUpPage() {
           <div className="rejection-row" key={candidate.id}>
             <div className="candidate-cell"><span className={`avatar avatar-${candidate.name[0].toLowerCase()}`}>{candidate.name[0]}</span><strong>{candidate.name.replace('.', '')}</strong></div>
             <span className="project-name-cell">Senior Product Designer<br />Hiring</span>
-            <span className={`status-dot ${status === 'not_reached' ? 'status-dot--not_reached' : 'status-dot--withdrawn'}`}><i />{status === 'not_reached' ? 'Not Reached' : 'Rejection Handled'}</span>
+            <span className={`status-dot ${status === 'waiting_for_contact' ? 'status-dot--waiting_for_contact' : 'status-dot--withdrawn'}`}><i />{status === 'waiting_for_contact' ? 'Waiting for Contact' : 'Rejection Handled'}</span>
             <span>22.04.2026</span>
             <Link className="outline-button" to={`/projects/${candidate.projectId}/candidates/${candidate.id}?source=rejection`}>View</Link>
           </div>

@@ -115,16 +115,17 @@ p, h1, h2, h3 { margin-top: 0; }
 .figma-stage-tabs a { height: 57px; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid transparent; color: #555; font-size: clamp(12px, 1.2vw, 14px); font-weight: 500; }
 .figma-stage-tabs a.active { border-bottom-color: #1d1d1f; color: #161719; font-weight: 700; }
 .figma-table-card { margin-top: 30px; background: #fff; min-height: 507px; border-radius: 6px; overflow-x: auto; overflow-y: hidden; }
-.figma-table-row { display: grid; column-gap: clamp(24px, 2.2vw, 38px); align-items: center; min-height: 89px; padding: 0 clamp(28px, 3vw, 48px); min-width: 0; }
-.figma-table-row--department_interview, .figma-table-row--hr_interview { grid-template-columns: minmax(200px, 1.45fr) minmax(155px, 1fr) minmax(84px, .5fr) minmax(165px, .95fr) minmax(145px, .8fr); }
-.figma-table-row--manager_review { grid-template-columns: minmax(220px, 1.45fr) minmax(170px, 1fr); }
-.figma-table-row--offer_stage { grid-template-columns: minmax(220px, 1.45fr) minmax(170px, 1fr) minmax(84px, .5fr) minmax(145px, .8fr); }
+.figma-table-row { display: grid; column-gap: clamp(16px, 1.6vw, 24px); align-items: center; min-height: 89px; padding: 0 clamp(28px, 3vw, 48px); min-width: 0; }
+.figma-table-row--department_interview, .figma-table-row--hr_interview { grid-template-columns: minmax(230px, 1.18fr) minmax(135px, .72fr) minmax(84px, .42fr) minmax(150px, .78fr) minmax(132px, .64fr); }
+.figma-table-row--manager_review { grid-template-columns: minmax(250px, 1.22fr) minmax(138px, .72fr); }
+.figma-table-row--offer_stage { grid-template-columns: minmax(250px, 1.22fr) minmax(138px, .72fr) minmax(84px, .42fr) minmax(132px, .64fr); }
 .figma-table-row--role-hm.figma-table-row--department_interview,
-.figma-table-row--role-hm.figma-table-row--hr_interview { grid-template-columns: minmax(220px, 1.45fr) minmax(170px, 1fr) minmax(170px, .95fr) minmax(145px, .8fr); }
-.figma-table-row--role-hm.figma-table-row--manager_review { grid-template-columns: minmax(220px, 1.45fr) minmax(170px, 1fr) minmax(170px, .95fr) minmax(145px, .8fr); }
-.figma-table-row--role-hm.figma-table-row--offer_stage { grid-template-columns: minmax(220px, 1.45fr) minmax(170px, 1fr) minmax(145px, .8fr); }
-.figma-table-header { min-height: 40px; color: #5c6468; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+.figma-table-row--role-hm.figma-table-row--hr_interview { grid-template-columns: minmax(250px, 1.22fr) minmax(138px, .72fr) minmax(155px, .78fr) minmax(132px, .64fr); }
+.figma-table-row--role-hm.figma-table-row--manager_review { grid-template-columns: minmax(250px, 1.22fr) minmax(138px, .72fr) minmax(132px, .64fr); }
+.figma-table-row--role-hm.figma-table-row--offer_stage { grid-template-columns: minmax(250px, 1.22fr) minmax(138px, .72fr) minmax(132px, .64fr); }
+.figma-table-header { min-height: 40px; color: #5c6468; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .12em; border-bottom: 1px solid #edf0f1; }
 .column-header { display: flex; justify-content: center; text-align: center; }
+.figma-table-header > :first-child { justify-self: start; text-align: left; padding-left: 8px; }
 .figma-table-row > :first-child { justify-self: start; text-align: left; }
 .candidate-cell { display: flex; align-items: center; gap: 12px; justify-self: start; text-align: left; padding-left: 8px; }
 .candidate-cell-link { color: inherit; }
@@ -182,7 +183,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .quick-actions-card .chevron-open { transform: rotate(180deg); }
 .quick-action-group { display: grid; gap: 12px; }
 .quick-action-menu { display: grid; gap: 10px; margin-left: 10px; padding: 14px 16px; background: rgba(255,255,255,.45); border-radius: 6px; }
-.quick-action-menu button { height: auto; padding: 0; font-size: 14px; font-weight: 600; color: #303638; }
+.quick-action-menu button, .quick-action-menu a { width: 100%; height: auto; justify-content: flex-start; padding: 0; font-size: 14px; font-weight: 600; color: #303638; text-align: left; }
 .quick-action-menu .quick-action-accent { color: #005bc2; }
 .quick-action-menu .quick-action-danger { color: #ad3c36; }
 .quick-note-box { margin: 0 0 0 10px; border: 1px solid #6f7378; border-radius: 6px; padding: 14px; background: rgba(255,255,255,.45); display: grid; gap: 10px; }
@@ -209,6 +210,8 @@ p, h1, h2, h3 { margin-top: 0; }
 .activity-index { color: #a2a3ad; font-size: 13px; font-weight: 800; }
 .figma-activity-list strong { display: block; color: #555; font-size: 14px; line-height: 19px; }
 .figma-activity-list strong.success { color: #005bc2; }
+.figma-activity-list strong.activity-title-offer-sent { color: #839f73; }
+.figma-activity-list strong.activity-title-waitlisted-by-hiring-manager { color: #86b4f3; }
 .figma-activity-list strong.warning, .figma-activity-list strong.danger { color: #ad3c36; }
 .figma-activity-list strong.stage { color: #7b9a62; }
 .figma-activity-list small { display: block; color: #555; font-size: 11px; margin-top: 4px; }
@@ -289,6 +292,22 @@ p, h1, h2, h3 { margin-top: 0; }
 .copy-info-button { width: 188px; height: 40px; border: 0; border-radius: 4px; background: #dfe6e8; color: #303638; font-size: 12px; font-weight: 700; }
 .copy-info-button--secondary { background: #f0f2f3; }
 
+.offer-list-surface { border-radius: 0; }
+.offer-list-modal { width: 576px; background: #fff; padding: 34px 32px 0; }
+.offer-list-modal h1 { font-family: Manrope, Inter, sans-serif; font-size: 36px; line-height: 40px; letter-spacing: -2px; margin: 0 0 20px; font-weight: 800; color: #2d3435; }
+.offer-list-stack { display: grid; gap: 12px; margin-bottom: 28px; }
+.offer-list-row { min-height: 78px; display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 14px; border-radius: 6px; padding: 16px 18px; background: #f0f2f3; }
+.offer-list-row--active { background: #eef5fc; border: 1px solid #bfd7f5; }
+.offer-list-handle { color: #8f979b; display: inline-grid; place-items: center; cursor: grab; }
+.offer-list-copy small { display: block; color: #7c858b; font-size: 11px; line-height: 14px; font-weight: 700; margin-bottom: 6px; }
+.offer-list-copy strong { display: block; color: #303638; font-size: 15px; line-height: 20px; font-weight: 700; }
+.offer-list-state { font-size: 12px; line-height: 16px; font-weight: 700; }
+.offer-list-state--pending, .offer-list-state--offer_sent { color: #839f73; }
+.offer-list-state--approved_for_offer { color: #005bc2; }
+.offer-list-footer { height: 87px; margin: 0 -32px; padding: 25px 32px 0; background: #fbfbfb; display: flex; align-items: start; justify-content: space-between; }
+.offer-list-footer a:first-child { margin-left: 24px; height: 40px; min-width: 96px; display: grid; place-items: center; color: #666; font-size: 14px; font-weight: 600; }
+.offer-list-save { width: 185px; height: 41px; display: grid; place-items: center; border-radius: 4px; background: #5f5f61; color: #fff; font-size: 14px; font-weight: 600; }
+
 /* Rejection follow-up */
 .rejection-screen { padding-top: 48px; }
 .rejection-screen h1 { font-family: Manrope, Inter, sans-serif; font-size: 36px; line-height: 43px; letter-spacing: -2px; margin: 0 0 74px 20px; color: var(--ink); }
@@ -299,14 +318,16 @@ p, h1, h2, h3 { margin-top: 0; }
 .rejection-filter-menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 200px; padding: 8px; border: 1px solid #dce2e4; border-radius: 8px; background: #fff; box-shadow: 0 12px 30px rgba(0,0,0,.12); display: grid; gap: 6px; z-index: 30; }
 .rejection-filter-menu button { width: 100%; height: auto; justify-content: space-between; padding: 10px 12px; gap: 12px; background: transparent; font-size: 13px; font-weight: 600; }
 .rejection-filter-menu button.active { background: #eef5fc; }
-.rejection-table { width: 944px; background: #fff; border: 1px solid #f1f1f1; border-radius: 6px; overflow: hidden; }
-.rejection-row { display: grid; grid-template-columns: 200px 170px 180px 170px 110px; column-gap: 14px; align-items: center; min-height: 88px; padding-left: 48px; font-size: 12px; }
-.rejection-header { min-height: 40px; color: #5c6468; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+.rejection-table { width: 1168px; background: #fff; border: 1px solid #f1f1f1; border-radius: 6px; overflow: hidden; }
+.rejection-row { display: grid; grid-template-columns: 300px 200px 190px 180px 120px; column-gap: 20px; align-items: center; justify-items: center; min-height: 88px; padding: 0 32px; font-size: 12px; }
+.rejection-header { min-height: 40px; color: #5c6468; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .12em; border-bottom: 1px solid #edf0f1; }
+.rejection-header span { text-align: center; }
+.rejection-header > :first-child { justify-self: start; text-align: left; padding-left: 8px; }
 .rejection-row .avatar { width: 36px; height: 36px; font-size: 13px; }
-.rejection-row .candidate-cell { gap: 14px; }
-.project-name-cell { text-align: center; font-size: 10px; line-height: 14px; color: #303638; }
-.rejection-row .outline-button { width: 56px; min-width: 56px; justify-self: start; }
-.rejection-footer { width: 944px; padding-right: 88px; }
+.rejection-row .candidate-cell { gap: 14px; justify-self: start; padding-left: 8px; }
+.project-name-cell { text-align: center; font-size: 10px; line-height: 14px; color: #303638; font-weight: 700; }
+.rejection-row .outline-button { width: 56px; min-width: 56px; justify-self: center; }
+.rejection-footer { width: 1168px; padding-right: 88px; }
 
 /* fallback/older pages */
 .page-stack { padding: 43px 20px; display: grid; gap: 24px; }

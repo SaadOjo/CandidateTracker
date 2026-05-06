@@ -100,14 +100,7 @@ export const mockCandidates: Candidate[] = [
       meetingUrl: 'https://meet.example.com/li-a',
     },
     activity: baseActivity,
-    notes: [
-      {
-        id: 'n1',
-        author: 'Hiring Manager',
-        createdAt: 'Apr 11, 2024 • 02:40 PM',
-        body: 'Built a strong product design portfolio with solid fintech and SaaS work. Communicates clearly and explains design decisions in a structured way.',
-      },
-    ],
+    notes: [],
   },
   {
     id: 'c-omar',
@@ -205,8 +198,8 @@ export const mockCandidates: Candidate[] = [
     stage: 'hr_interview',
     status: 'not_reached',
     appliedAgo: 'Applied 5d ago',
-    contactAttempts: 2,
-    activity: [...departmentInterviewActivity, { id: 'a11-kerem', index: '05', title: 'Not Reached', subtitle: 'Contact Attempt 2', date: 'Apr 10, 2024', tone: 'warning' as const }],
+    contactAttempts: 3,
+    activity: [...departmentInterviewActivity, { id: 'a11-kerem', index: '05', title: 'Not Reached', subtitle: 'Contact Attempt 3', date: 'Apr 10, 2024', tone: 'warning' as const }],
     notes: [
       {
         id: 'n-hr-omar-1',
@@ -257,7 +250,7 @@ export const mockCandidates: Candidate[] = [
     status: 'waitlisted',
     appliedAgo: 'Applied 3h ago',
     contactAttempts: 2,
-    activity: hrInterviewActivity,
+    activity: [...hrInterviewActivity, { id: 'a19', index: '07', title: 'Waitlisted by Hiring Manager', date: 'Apr 12, 2024', tone: 'success' as const }],
     notes: [
       {
         id: 'n-efekan-1',
@@ -281,10 +274,10 @@ export const mockCandidates: Candidate[] = [
     stage: 'manager_review',
     status: 'rejected',
     appliedAgo: 'Applied 4d ago',
-    contactAttempts: 2,
+    contactAttempts: 4,
     activity: [
       ...hrInterviewActivity,
-      { id: 'a9', index: '07', title: 'Proceeded with another candidate.', date: 'May 04, 2024', tone: 'neutral' as const },
+      { id: 'a9', index: '07', title: 'Rejected by Hiring Manager', date: 'May 04, 2024', tone: 'danger' as const },
       { id: 'a14', index: '08', title: 'Candidate Informed', subtitle: 'Contact Attempt 4', date: 'May 05, 2024', tone: 'neutral' as const },
     ],
     notes: [

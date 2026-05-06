@@ -8,6 +8,7 @@ import { candidateTrackerRepository } from '../../data/repository'
 import type { Candidate } from '../../domain/types'
 import { ContactCardModal } from './ContactCardModal'
 import { LogContactAttemptModal } from './LogContactAttemptModal'
+import { OfferListModal } from './OfferListModal'
 
 export function CandidateDetailPage() {
   const { role } = useOutletContext<AppOutletContext>()
@@ -53,6 +54,7 @@ export function CandidateDetailPage() {
     {searchParams.get('modal') === 'contact-card' && <ContactCardModal candidate={candidate} closeTo={closeTo} />}
     {searchParams.get('modal') === 'log-contact' && <LogContactAttemptModal candidate={candidate} closeTo={closeTo} />}
     {searchParams.get('modal') === 'rejection-contact' && <LogContactAttemptModal candidate={candidate} closeTo={closeTo} kind="rejection" />}
+    {searchParams.get('modal') === 'offer-list' && <OfferListModal candidate={candidate} closeTo={closeTo} />}
     </>
   )
 }
@@ -121,8 +123,8 @@ function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; r
         <div className="quick-action-group">
           <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
           {processOpen && <div className="quick-action-menu">
-            <button>Approve for Offer</button>
-            <button>Waitlist</button>
+            <Link to={`${closeTo}${queryPrefix}modal=offer-list`}>Approve for Offer</Link>
+            {candidate.status !== 'waitlisted' && <button>Waitlist</button>}
             <button className="quick-action-danger">Reject</button>
           </div>}
         </div>
@@ -160,7 +162,7 @@ function ActivityHistory({ candidate }: { candidate: Candidate }) {
         {visible.map((item) => (
           <li key={item.id}>
             <span className="activity-index">{item.index}</span>
-            <div><strong className={item.tone ?? ''}>{item.title}</strong>{item.subtitle && <small>{item.subtitle}</small>}</div>
+            <div><strong className={`${item.tone ?? ''} activity-title-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`.trim()}>{item.title}</strong>{item.subtitle && <small>{item.subtitle}</small>}</div>
             <time>{item.date ?? item.title}</time>
           </li>
         ))}
