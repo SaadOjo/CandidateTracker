@@ -17,7 +17,7 @@ export function RejectionFollowUpPage() {
 
   useEffect(() => {
     candidateTrackerRepository.listCandidates().then((items) => {
-      setCandidates(items.filter((candidate) => ['c-alp', 'c-hr-ayca', 'c-marcus'].includes(candidate.id)))
+      setCandidates(items.filter((candidate) => candidate.status === 'rejected' || candidate.status === 'proceeded_with_another_candidate'))
     })
     candidateTrackerRepository.listProjects().then(setProjects)
   }, [])
@@ -27,13 +27,17 @@ export function RejectionFollowUpPage() {
     return candidates
       .map((candidate) => ({
         candidate,
-        status: candidate.id === 'c-marcus' ? 'handled' : 'waiting_for_contact' as RejectionStatusFilter,
+        status: candidate.status === 'proceeded_with_another_candidate' || candidate.id === 'c-marcus' ? 'handled' : 'waiting_for_contact' as RejectionStatusFilter,
       }))
       .filter(({ candidate, status }) => {
         if (normalizedQuery && !candidate.name.toLowerCase().includes(normalizedQuery)) return false
         if (projectFilter !== 'all' && candidate.projectId !== projectFilter) return false
         if (statusFilter !== 'all' && status !== statusFilter) return false
         return true
+      })
+      .sort((left, right) => {
+        const getPriority = (status: RejectionStatusFilter) => status === 'waiting_for_contact' ? 0 : 1
+        return getPriority(left.status) - getPriority(right.status)
       })
   }, [candidates, projectFilter, query, statusFilter])
 
@@ -66,13 +70,13 @@ export function RejectionFollowUpPage() {
         {rejectionRows.map(({ candidate, status }) => (
           <div className="rejection-row" key={candidate.id}>
             <div className="candidate-cell"><span className={`avatar avatar-${candidate.name[0].toLowerCase()}`}>{candidate.name[0]}</span><strong>{candidate.name.replace('.', '')}</strong></div>
-            <span className="project-name-cell">Senior Product Designer<br />Hiring</span>
+            <span className="project-name-cell">{projects.find((project) => project.id === candidate.projectId)?.name ?? 'Project'}</span>
             <span className={`status-dot ${status === 'waiting_for_contact' ? 'status-dot--waiting_for_contact' : 'status-dot--withdrawn'}`}><i />{status === 'waiting_for_contact' ? 'Waiting for Contact' : 'Rejection Handled'}</span>
             <span>22.04.2026</span>
             <Link className="outline-button" to={`/projects/${candidate.projectId}/candidates/${candidate.id}?source=rejection`}>View</Link>
           </div>
         ))}
-        <footer className="figma-table-footer rejection-footer"><span>Showing {rejectionRows.length} of 42 candidates</span><span className="pager">‹ <b>1</b> 2 3 ›</span></footer>
+        <footer className="figma-table-footer rejection-footer"><span>Showing {rejectionRows.length} of {candidates.length} candidates</span></footer>
       </section>
     </div>
   )

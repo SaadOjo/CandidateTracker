@@ -17,6 +17,7 @@ export type CandidateStatus =
   | 'offer_sent'
   | 'offer_rejected'
   | 'offer_accepted'
+  | 'proceeded_with_another_candidate'
 
 export type ProjectStatus = 'active' | 'archived'
 

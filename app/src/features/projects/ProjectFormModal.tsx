@@ -1,5 +1,5 @@
 import { ChevronDown, Download, Info, Link as LinkIcon, Search, UsersRound, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ModalOverlay } from '../../components/ui/ModalOverlay'
 import type { Project } from '../../domain/types'
@@ -8,9 +8,11 @@ interface Props {
   mode: 'create' | 'edit'
   closeTo: string
   project?: Project
+  canArchive?: boolean
 }
 
-export function ProjectFormModal({ mode, closeTo, project }: Props) {
+export function ProjectFormModal({ mode, closeTo, project, canArchive = false }: Props) {
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const title = mode === 'edit' ? 'Edit Project' : 'Create New Project'
   const submitLabel = mode === 'edit' ? 'Save' : 'Create Project'
   const submitTo = mode === 'edit' ? closeTo : '/projects/p-designer/pipeline/department_interview'
@@ -20,6 +22,15 @@ export function ProjectFormModal({ mode, closeTo, project }: Props) {
     <ModalOverlay closeTo={closeTo} labelledBy="project-form-title">
       <div className="new-project-modal modal-project-form">
         <h1 id="project-form-title">{title}</h1>
+        {mode === 'edit' && <div className="project-form-top-actions"><button className="archive-project-button" onClick={() => setArchiveConfirmOpen(true)}><Download size={14} /> Archive Project</button>
+        {archiveConfirmOpen && <div className="confirmation-popover confirmation-popover--project-archive">
+          <h3>Archive this project?</h3>
+          <p>{canArchive ? 'This project has a candidate who accepted the offer. Archiving will move it to Archived Projects.' : 'It looks like there is still no candidate who accepted offer. Are you sure to archive this project?'}</p>
+          <div className="confirmation-popover-actions">
+            <button onClick={() => setArchiveConfirmOpen(false)}>Cancel</button>
+            <Link className="confirmation-approve" to="/projects/archived">Archive</Link>
+          </div>
+        </div>}</div>}
 
         <FormSection icon={<Info size={14} />} title="Basic Information">
           <div className="two-col">
@@ -48,6 +59,7 @@ export function ProjectFormModal({ mode, closeTo, project }: Props) {
           <Link to={closeTo}>Cancel</Link>
           <Link className="create-button" to={submitTo}>{submitLabel}</Link>
         </div>
+
       </div>
     </ModalOverlay>
   )

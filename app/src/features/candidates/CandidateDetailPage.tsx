@@ -15,10 +15,16 @@ export function CandidateDetailPage() {
   const { projectId = '', candidateId = '' } = useParams()
   const [searchParams] = useSearchParams()
   const [candidate, setCandidate] = useState<Candidate>()
+  const [projectCandidates, setProjectCandidates] = useState<Candidate[]>([])
 
   useEffect(() => {
     candidateTrackerRepository.getCandidate(candidateId).then(setCandidate)
   }, [candidateId])
+
+  useEffect(() => {
+    if (!projectId) return
+    candidateTrackerRepository.listCandidates({ projectId }).then(setProjectCandidates)
+  }, [projectId])
 
   if (!candidate) return <EmptyState title="Candidate not found" />
 
@@ -48,7 +54,7 @@ export function CandidateDetailPage() {
       </section>
 
       <aside className="candidate-detail-side">
-        <QuickActions closeTo={closeTo} role={role} candidate={candidate} source={source} />
+        <QuickActions closeTo={closeTo} role={role} candidate={candidate} projectCandidates={projectCandidates} source={source} />
       </aside>
     </div>
     {searchParams.get('modal') === 'contact-card' && <ContactCardModal candidate={candidate} closeTo={closeTo} />}
@@ -95,7 +101,9 @@ function InternalNotes({ candidate }: { candidate: Candidate }) {
   )
 }
 
-function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; role: AppOutletContext['role']; candidate: Candidate; source: string | null }) {
+function QuickActions({ closeTo, role, candidate, projectCandidates, source }: { closeTo: string; role: AppOutletContext['role']; candidate: Candidate; projectCandidates: Candidate[]; source: string | null }) {
+  const hasOfferSentCandidate = projectCandidates.some((item) => item.stage === 'offer_stage' && item.status === 'offer_sent')
+  const hasAcceptedOfferCandidate = projectCandidates.some((item) => item.stage === 'offer_stage' && item.status === 'offer_accepted')
   const [processOpen, setProcessOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [offerOpen, setOfferOpen] = useState(false)
@@ -138,6 +146,14 @@ function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; r
           </div>}
         </div>
       )}
+      {role === 'hm' && candidate.stage === 'offer_stage' && candidate.status === 'approved_for_offer' && source !== 'rejection' && !hasAcceptedOfferCandidate && (
+        <div className="quick-action-group">
+          <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
+          {processOpen && <div className="quick-action-menu">
+            <Link to={`${closeTo}${queryPrefix}modal=offer-list`}>Offer List</Link>
+          </div>}
+        </div>
+      )}
       {role === 'hr' && candidate.stage === 'hr_interview' && candidate.status === 'scheduled' && source !== 'rejection' && (
         <div className="quick-action-group">
           <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
@@ -147,7 +163,7 @@ function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; r
           </div>}
         </div>
       )}
-      {role === 'hr' && candidate.stage === 'offer_stage' && source !== 'rejection' && (
+      {role === 'hr' && candidate.stage === 'offer_stage' && source !== 'rejection' && !hasAcceptedOfferCandidate && (!hasOfferSentCandidate || candidate.status !== 'approved_for_offer') && (
         <div className="quick-action-group">
           <button onClick={() => setOfferOpen((open) => !open)}><Search size={16} /> Offer Handling <ChevronDown className={`push ${offerOpen ? 'chevron-open' : ''}`} size={16} /></button>
           {offerOpen && <div className="quick-action-menu">

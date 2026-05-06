@@ -25,6 +25,7 @@ export const statusLabels: Record<CandidateStatus, string> = {
   offer_sent: 'Offer Sent',
   offer_rejected: 'Offer Rejected',
   offer_accepted: 'Offer Accepted',
+  proceeded_with_another_candidate: 'Proceeded with Another Candidate',
 }
 
 export const projectStatusLabels: Record<ProjectStatus, string> = {

@@ -15,6 +15,7 @@ export function PipelinePage() {
   const [searchParams] = useSearchParams()
   const selectedStage = stage as PipelineStage
   const [project, setProject] = useState<Project>()
+  const [allProjectCandidates, setAllProjectCandidates] = useState<Candidate[]>([])
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [query, setQuery] = useState('')
 
@@ -26,25 +27,34 @@ export function PipelinePage() {
     candidateTrackerRepository.listCandidates({ projectId, stage: selectedStage, query }).then(setCandidates)
   }, [projectId, selectedStage, query])
 
+  useEffect(() => {
+    candidateTrackerRepository.listCandidates({ projectId }).then(setAllProjectCandidates)
+  }, [projectId])
+
   const modalCandidateId = searchParams.get('candidateId')
   const modalCandidate = candidates.find((candidate) => candidate.id === modalCandidateId)
   const closeTo = `/projects/${projectId}/pipeline/${selectedStage}`
 
   const columns = getStageColumns(role, selectedStage)
   const visibleCandidates = [...candidates].sort((left, right) => {
-    if (selectedStage !== 'manager_review') return 0
-    const leftPending = left.status === 'waiting_for_contact' ? 0 : 1
-    const rightPending = right.status === 'waiting_for_contact' ? 0 : 1
-    return leftPending - rightPending
+    const getPriority = (status: Candidate['status']) => {
+      if (status === 'waiting_for_contact') return 0
+      if (status === 'not_reached') return 1
+      if (status === 'withdrawn' || status === 'rejected') return 3
+      return 2
+    }
+
+    return getPriority(left.status) - getPriority(right.status)
   })
 
   return (
     <>
     <div className="pipeline-screen">
       <section className="pipeline-title-block">
-        <div className="title-line"><h1>Project Pipeline</h1><StatusBadge type="project" status="active" /></div>
+        <div className="title-line"><h1>Project Pipeline</h1><StatusBadge type="project" status={allProjectCandidates.some((candidate) => candidate.status === 'offer_accepted') && project?.status === 'active' ? 'candidate_accepted' : project?.status ?? 'active'} /></div>
         <h2>{project?.name ?? 'Senior Product Designer Hiring'}</h2>
         <p>Position: {project?.position ?? 'Senior Product Designer'}</p>
+        {project?.notes && <small className="pipeline-project-note">{project.notes}</small>}
       </section>
 
       <div className="pipeline-search-row">
@@ -88,7 +98,7 @@ export function PipelinePage() {
           </div>
         ))}
 
-        <footer className="figma-table-footer"><span>Showing {visibleCandidates.length} of {project?.candidateCount ?? 42} candidates</span><span className="pager">‹ <b>1</b> 2 3 ›</span></footer>
+        <footer className="figma-table-footer"><span>Showing {visibleCandidates.length} of {project?.candidateCount ?? visibleCandidates.length} candidates</span></footer>
       </section>
     </div>
     {searchParams.get('modal') === 'contact-card' && modalCandidate && <ContactCardModal candidate={modalCandidate} closeTo={closeTo} />}

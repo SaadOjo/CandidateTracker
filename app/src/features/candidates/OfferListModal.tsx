@@ -13,6 +13,8 @@ interface OfferListModalProps {
 export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
   const [items, setItems] = useState<Candidate[]>([])
   const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     candidateTrackerRepository.listCandidates({ projectId: candidate.projectId, stage: 'offer_stage' }).then((offerCandidates) => {
@@ -33,6 +35,7 @@ export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
       next.splice(toIndex, 0, moved)
       return next
     })
+    setDirty(true)
   }
 
   return (
@@ -66,8 +69,17 @@ export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
 
         <div className="offer-list-footer">
           <Link to={closeTo}>Cancel</Link>
-          <Link className="offer-list-save" to={closeTo}>Save</Link>
+          {dirty ? <button className="offer-list-save" onClick={() => setConfirmOpen(true)}>Save</button> : <Link className="offer-list-save" to={closeTo}>Done</Link>}
         </div>
+
+        {confirmOpen && dirty && <div className="confirmation-popover confirmation-popover--offer-list">
+          <h3>Save offer list order?</h3>
+          <p>The order of approved-for-offer candidates will be updated for the hiring manager review flow.</p>
+          <div className="confirmation-popover-actions">
+            <button onClick={() => setConfirmOpen(false)}>Cancel</button>
+            <Link className="confirmation-approve" to={closeTo}>Confirm</Link>
+          </div>
+        </div>}
       </div>
     </ModalOverlay>
   )

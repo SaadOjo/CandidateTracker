@@ -16,9 +16,17 @@ export function ProjectsPage({ modal, view = 'default' }: ProjectsPageProps) {
   const { role } = useOutletContext<AppOutletContext>()
   const { projectId } = useParams()
   const [projects, setProjects] = useState<Project[]>([])
+  const [projectHasAcceptedOffer, setProjectHasAcceptedOffer] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     candidateTrackerRepository.listProjects().then(setProjects)
+    candidateTrackerRepository.listCandidates().then((items) => {
+      const acceptedMap = items.reduce<Record<string, boolean>>((acc, candidate) => {
+        if (candidate.status === 'offer_accepted') acc[candidate.projectId] = true
+        return acc
+      }, {})
+      setProjectHasAcceptedOffer(acceptedMap)
+    })
   }, [])
 
   const active = projects.filter((project) => project.status === 'active')
@@ -34,7 +42,7 @@ export function ProjectsPage({ modal, view = 'default' }: ProjectsPageProps) {
 
       <div className={`figma-project-grid ${view === 'archived' ? 'figma-project-grid--archived' : ''}`}>
         {visibleProjects.map((project) => (
-          <ProjectCard key={project.id} project={project} role={role} />
+          <ProjectCard key={project.id} project={project} role={role} hasAcceptedOffer={projectHasAcceptedOffer[project.id]} />
         ))}
 
         {view === 'default' && <Link className="figma-project-card archive-card" to="/projects/archived">
@@ -50,18 +58,17 @@ export function ProjectsPage({ modal, view = 'default' }: ProjectsPageProps) {
           <div className="plus-tile"><Plus size={24} /></div>
           <div>
             <h3>Launch New Project</h3>
-            <p>Ready to scale your team?</p>
           </div>
         </Link>}
       </div>
     </div>
     {modal === 'new' && <ProjectFormModal mode="create" closeTo="/projects" />}
-    {modal === 'edit' && selectedProject && <ProjectFormModal mode="edit" closeTo="/projects" project={selectedProject} />}
+    {modal === 'edit' && selectedProject && <ProjectFormModal mode="edit" closeTo="/projects" project={selectedProject} canArchive={!!projectHasAcceptedOffer[selectedProject.id]} />}
     </>
   )
 }
 
-function ProjectCard({ project, role }: { project: Project; role: AppOutletContext['role'] }) {
+function ProjectCard({ project, role, hasAcceptedOffer }: { project: Project; role: AppOutletContext['role']; hasAcceptedOffer?: boolean }) {
   const navigate = useNavigate()
 
   return (
@@ -77,15 +84,15 @@ function ProjectCard({ project, role }: { project: Project; role: AppOutletConte
         }
       }}
     >
-      <StatusBadge type="project" status={project.status} />
+      <StatusBadge type="project" status={hasAcceptedOffer && project.status === 'active' ? 'candidate_accepted' : project.status} />
       <ArrowRight className="card-corner" size={22} />
       <div>
         <h3>{project.name}</h3>
         <p>{project.position}</p>
       </div>
       <div className="project-card-footer">
-        <span className="avatar-stack"><span className="avatar avatar-sm">S</span><span className="count-pill">+{project.candidateCount}</span></span>
-        {role === 'hr' && <Link className="edit-project" to={`/projects/${project.id}/edit`} onClick={(event) => event.stopPropagation()}><Pencil size={13} /> Edit Project</Link>}
+        <span className="avatar-stack"><span className="avatar avatar-sm">S</span><span className="count-pill">{project.candidateCount}</span></span>
+        {role === 'hr' && project.status !== 'archived' && <Link className="edit-project" to={`/projects/${project.id}/edit`} onClick={(event) => event.stopPropagation()}><Pencil size={13} /> Edit Project</Link>}
       </div>
     </article>
   )
