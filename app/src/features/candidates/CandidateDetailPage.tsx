@@ -119,6 +119,15 @@ function QuickActions({ closeTo, role, candidate, source }: { closeTo: string; r
           </div>
         </div>}
       </div>
+      {role === 'hm' && candidate.stage === 'department_interview' && candidate.status === 'scheduled' && source !== 'rejection' && (
+        <div className="quick-action-group">
+          <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
+          {processOpen && <div className="quick-action-menu">
+            <button>Move to HR Stage</button>
+            <button className="quick-action-danger">Reject</button>
+          </div>}
+        </div>
+      )}
       {role === 'hm' && candidate.stage === 'manager_review' && (
         <div className="quick-action-group">
           <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
