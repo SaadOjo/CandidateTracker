@@ -1,9 +1,10 @@
 export type Role = 'hr' | 'hm'
 
 export type PipelineStage =
+  | 'pre_interview'
   | 'department_interview'
-  | 'hr_interview'
   | 'manager_review'
+  | 'hr_interview'
   | 'offer_stage'
 
 export type CandidateStatus =
@@ -12,6 +13,8 @@ export type CandidateStatus =
   | 'not_reached'
   | 'withdrawn'
   | 'rejected'
+  | 'assessment_sent'
+  | 'waiting_for_assessment'
   | 'waitlisted'
   | 'approved_for_offer'
   | 'offer_sent'
@@ -29,8 +32,14 @@ export interface Project {
   candidateCount: number
   hiringManager: string
   assignedHr: string[]
+  createdAt?: string
+  archivedAt?: string
   linkedinProjectId?: string
   notes?: string
+  preInterviewComments?: {
+    hr: string[]
+    hm: string[]
+  }
 }
 
 export interface InterviewDetails {
@@ -53,8 +62,15 @@ export interface ActivityItem {
 export interface Note {
   id: string
   author: string
+  authorName?: string
   createdAt: string
-  body: string
+  body?: string
+  visibility?: 'all' | 'hr_only'
+  fields?: Array<{
+    question: string
+    answer: string
+    visibility?: 'all' | 'hr_only'
+  }>
 }
 
 export interface Candidate {

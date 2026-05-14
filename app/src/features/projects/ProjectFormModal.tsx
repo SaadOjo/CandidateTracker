@@ -15,7 +15,7 @@ export function ProjectFormModal({ mode, closeTo, project, canArchive = false }:
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const title = mode === 'edit' ? 'Edit Project' : 'Create New Project'
   const submitLabel = mode === 'edit' ? 'Save' : 'Create Project'
-  const submitTo = mode === 'edit' ? closeTo : '/projects/p-designer/pipeline/department_interview'
+  const submitTo = mode === 'edit' ? closeTo : '/projects/p-designer/pipeline/pre_interview'
   const requiredMark = mode === 'create' ? <em>*</em> : null
 
   return (

@@ -76,11 +76,11 @@ function ProjectCard({ project, role, hasAcceptedOffer }: { project: Project; ro
       className="figma-project-card figma-project-card--clickable"
       role="link"
       tabIndex={0}
-      onClick={() => navigate(`/projects/${project.id}/pipeline/department_interview`)}
+      onClick={() => navigate(`/projects/${project.id}/pipeline/pre_interview`)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          navigate(`/projects/${project.id}/pipeline/department_interview`)
+          navigate(`/projects/${project.id}/pipeline/pre_interview`)
         }
       }}
     >

@@ -3,14 +3,13 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { candidateTrackerRepository } from '../../data/repository'
 import { stageLabels } from '../../domain/labels'
-import type { Candidate, PipelineStage, Project, Role } from '../../domain/types'
+import type { Candidate, Project, Role } from '../../domain/types'
 
 function Breadcrumbs() {
   const { pathname, search } = useLocation()
   const parts = pathname.split('/').filter(Boolean)
   const projectId = parts[1]
   const candidateId = parts[3]
-  const stage = parts[3] as PipelineStage | undefined
   const [project, setProject] = useState<Project>()
   const [candidate, setCandidate] = useState<Candidate>()
 
@@ -54,13 +53,12 @@ function Breadcrumbs() {
         <Link className="crumb" to="/projects">Projects</Link>
         <ChevronRight size={14} />
         <span className="crumb active">{project?.name ?? 'Project'}</span>
-        {stage && stage !== 'department_interview' && <><ChevronRight size={14} /><span className="crumb muted">{stageLabels[stage]}</span></>}
       </>
     )
   }
 
   if (parts[0] === 'projects' && parts[2] === 'candidates') {
-    const candidateStage = candidate?.stage ?? 'department_interview'
+    const candidateStage = candidate?.stage ?? 'pre_interview'
     const source = new URLSearchParams(search).get('source')
 
     if (source === 'rejection') {
@@ -96,6 +94,7 @@ const profiles: Record<Role, { name: string; label: string }> = {
 
 export interface AppOutletContext {
   role: Role
+  activeProfile: { name: string; label: string }
 }
 
 export function AppLayout() {
@@ -156,7 +155,7 @@ export function AppLayout() {
         </header>
 
         <main className="main-content">
-          <Outlet context={{ role }} />
+          <Outlet context={{ role, activeProfile }} />
         </main>
       </div>
     </div>

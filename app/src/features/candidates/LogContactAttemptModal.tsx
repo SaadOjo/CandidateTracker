@@ -16,7 +16,8 @@ export function LogContactAttemptModal({ candidate, closeTo, kind = 'contact' }:
   const title = isRejection ? 'Log Rejection Contact Attempt' : 'Log Contact Attempt'
   const saveLabel = isRejection ? 'Save Rejection Log' : 'Save Contact Log'
   const subtitle = isRejection ? (candidate?.name ?? 'Candidate Name') : `${candidate?.name ?? 'Candidate Name'} - ${candidate ? stageLabels[candidate.stage] : 'Candidate Step'}`
-  const options = isRejection ? ['Not Reached', 'Rejection Handled'] : ['Not Reached', 'Scheduled', 'Withdrawn']
+  const isPreInterview = candidate?.stage === 'pre_interview'
+  const options = isRejection ? ['Not Reached', 'Rejection Handled'] : isPreInterview ? ['Contact Successful', 'Pre-Interview Not Conducted', 'Withdrawn', 'Not Reached'] : ['Not Reached', 'Scheduled', 'Withdrawn']
   const [selectedResult, setSelectedResult] = useState<string>(options[0])
   const showInterviewFields = !isRejection && selectedResult === 'Scheduled'
 

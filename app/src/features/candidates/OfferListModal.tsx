@@ -15,12 +15,14 @@ export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [rankOffset, setRankOffset] = useState(0)
 
   useEffect(() => {
     candidateTrackerRepository.listCandidates({ projectId: candidate.projectId, stage: 'offer_stage' }).then((offerCandidates) => {
       const queue = offerCandidates.filter((item) => item.status === 'approved_for_offer')
       const hasCandidate = queue.some((item) => item.id === candidate.id)
       setItems(hasCandidate ? queue : [candidate, ...queue])
+      setRankOffset(offerCandidates.some((item) => item.status === 'offer_sent') ? 1 : 0)
     })
   }, [candidate])
 
@@ -42,8 +44,6 @@ export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
     <ModalOverlay closeTo={closeTo} labelledBy="offer-list-title" surfaceClassName="offer-list-surface">
       <div className="offer-list-modal">
         <h1 id="offer-list-title">Offer List</h1>
-        <p className="modal-subtitle">Approve {candidate.name} for offer and adjust the list order.</p>
-
         <div className="offer-list-stack">
           {items.map((item, index) => (
             <div
@@ -59,7 +59,7 @@ export function OfferListModal({ candidate, closeTo }: OfferListModalProps) {
             >
               <span className="offer-list-handle" aria-hidden="true"><GripVertical size={18} /></span>
               <div className="offer-list-copy">
-                <small>{getOfferRankLabel(index)}</small>
+                <small>{getOfferRankLabel(index + rankOffset)}</small>
                 <strong>{item.name}</strong>
               </div>
               <span className={`offer-list-state ${item.id === candidate.id ? 'offer-list-state--pending' : `offer-list-state--${item.status}`}`}>{item.id === candidate.id ? 'Pending Approval' : item.status === 'offer_sent' ? 'Offer Sent' : 'Approved for Offer'}</span>
@@ -89,6 +89,9 @@ function getOfferRankLabel(index: number) {
   if (index === 0) return 'First Candidate'
   if (index === 1) return 'Second Candidate'
   if (index === 2) return 'Third Candidate'
-  return `Candidate ${index + 1}`
+  if (index === 3) return 'Fourth Candidate'
+  if (index === 4) return 'Fifth Candidate'
+  if (index === 5) return 'Sixth Candidate'
+  return `${index + 1}th Candidate`
 }
 
