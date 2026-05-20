@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
 import { type AppOutletContext } from '../../components/layout/AppLayout'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { stageLabels } from '../../domain/labels'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { candidateTrackerRepository } from '../../data/repository'
 import type { Candidate, Note, Project } from '../../domain/types'
@@ -172,6 +173,7 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
   const [processOpen, setProcessOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [offerOpen, setOfferOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'reject' | null>(null)
   const [textNote, setTextNote] = useState('')
   const [formNote, setFormNote] = useState<Record<string, string>>({})
   const queryPrefix = closeTo.includes('?') ? '&' : '?'
@@ -207,7 +209,7 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
         <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
         {processOpen && <div className="quick-action-menu">
           <button>Move to Department Interview Stage</button>
-          <button className="quick-action-danger">Reject</button>
+          <button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Reject</button>
         </div>}
       </div>}
       {role === 'hr' && candidate.stage !== 'pre_interview' && candidate.stage !== 'manager_review' && source !== 'rejection' && <Link to={`${closeTo}${queryPrefix}modal=contact-card`}><Phone size={16} /> Contact Info</Link>}
@@ -218,7 +220,7 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
           <button onClick={() => setProcessOpen((open) => !open)}><Search size={16} /> Process <ChevronDown className={`push ${processOpen ? 'chevron-open' : ''}`} size={16} /></button>
           {processOpen && <div className="quick-action-menu">
             <button>Move to HR Stage</button>
-            <button className="quick-action-danger">Reject</button>
+            <button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Reject</button>
           </div>}
         </div>
       )}
@@ -228,7 +230,7 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
           {processOpen && <div className="quick-action-menu">
             <Link to={`${closeTo}${queryPrefix}modal=offer-list`}>Approve for Offer</Link>
             {candidate.status !== 'waitlisted' && <button>Waitlist</button>}
-            <button className="quick-action-danger">Reject</button>
+            <button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Reject</button>
           </div>}
         </div>
       )}
@@ -247,10 +249,10 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
             {candidate.status === 'assessment_sent'
               ? <>
                   <button>Move to Candidate Review</button>
-                  <button className="quick-action-danger">Reject</button>
+                  <button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Reject</button>
                 </>
               : <>
-                  <button className="quick-action-danger">Reject</button>
+                  <button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Reject</button>
                   <button>Send Assessment</button>
                 </>}
           </div>}
@@ -261,12 +263,24 @@ function QuickActions({ closeTo, role, activeProfile, candidate, candidateId, pr
           <button onClick={() => setOfferOpen((open) => !open)}><Search size={16} /> Offer Handling <ChevronDown className={`push ${offerOpen ? 'chevron-open' : ''}`} size={16} /></button>
           {offerOpen && <div className="quick-action-menu">
             {candidate.status === 'approved_for_offer' && <button>Send Offer</button>}
-            {candidate.status === 'offer_sent' && <><button className="quick-action-accent">Offer Accepted</button><button className="quick-action-danger">Offer Rejected</button></>}
+            {candidate.status === 'offer_sent' && <><button className="quick-action-accent">Offer Accepted</button><button className="quick-action-danger" onClick={() => setConfirmAction('reject')}>Offer Rejected</button></>}
             {candidate.status === 'offer_rejected' && <button>Offer Rejected</button>}
             {candidate.status === 'offer_accepted' && <button>Offer Accepted</button>}
           </div>}
         </div>
       )}
+      {confirmAction && <>
+        <div className="pipeline-confirmation-backdrop" onClick={() => setConfirmAction(null)} />
+        <div className="confirmation-popover confirmation-popover--quick-action">
+          <h3>Are you sure?</h3>
+          <p><strong>{candidate.name}</strong> · {stageLabels[candidate.stage]}</p>
+          <p>This candidate will be rejected from the process.</p>
+          <div className="confirmation-popover-actions">
+            <button onClick={() => setConfirmAction(null)}>Cancel</button>
+            <button className="confirmation-approve" onClick={() => setConfirmAction(null)}>Confirm</button>
+          </div>
+        </div>
+      </>}
     </section>
   )
 }

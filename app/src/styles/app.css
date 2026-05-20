@@ -326,8 +326,8 @@ p, h1, h2, h3 { margin-top: 0; }
 .optional-heading em { color: #a8adb0; font-size: 10px; font-style: italic; font-weight: 400; letter-spacing: 0; }
 .log-contact-modal textarea { width: 100%; min-height: 105px; border: 0; outline: 0; background: #f0f2f3; border-radius: 4px; padding: 14px 16px; resize: none; color: #697386; font-size: 14px; line-height: 20px; }
 .figma-log-footer { height: 87px; margin: 31px -32px 0; padding: 25px 32px 0; background: #fbfbfb; display: flex; align-items: start; justify-content: space-between; }
-.figma-log-footer a:first-child { margin-left: 24px; height: 40px; min-width: 96px; display: grid; place-items: center; color: #666; font-size: 14px; font-weight: 600; }
-.save-log-button { width: 185px; height: 41px; display: grid; place-items: center; border-radius: 4px; background: #5f5f61; color: #fff; font-size: 14px; font-weight: 600; }
+.figma-log-footer a:first-child, .modal-text-button { margin-left: 24px; height: 40px; min-width: 96px; display: grid; place-items: center; color: #666; font-size: 14px; font-weight: 600; background: transparent; border: 0; }
+.save-log-button { width: 185px; height: 41px; display: grid; place-items: center; border-radius: 4px; background: #5f5f61; color: #fff; font-size: 14px; font-weight: 600; border: 0; }
 
 .contact-card-surface { border-radius: 4px; }
 .contact-card-surface .modal-close { right: 13px; top: 13px; background: transparent; }
@@ -362,9 +362,13 @@ p, h1, h2, h3 { margin-top: 0; }
 .confirmation-popover { position: absolute; right: 32px; top: 32px; width: 320px; padding: 20px; border: 1px solid #dce2e4; border-radius: 8px; background: #fff; box-shadow: 0 18px 40px rgba(0,0,0,.18); z-index: 41; }
 .confirmation-popover--offer-list { right: 32px; top: 120px; }
 .confirmation-popover--pipeline-offer-reorder { position: fixed; left: 50%; top: 50%; right: auto; transform: translate(-50%, -50%); }
+.confirmation-popover--log-contact,
+.confirmation-popover--quick-action { position: fixed; left: 50%; top: 50%; right: auto; transform: translate(-50%, -50%); }
 .confirmation-popover--project-archive { position: absolute; left: 0; top: calc(100% + 12px); right: auto; width: 340px; }
 .confirmation-popover h3 { margin: 0 0 10px; color: #303638; font-size: 18px; line-height: 24px; font-weight: 700; }
 .confirmation-popover p { margin: 0; color: #5d6468; font-size: 13px; line-height: 20px; }
+.confirmation-popover p + p { margin-top: 8px; }
+.confirmation-popover p strong { color: #303638; font-weight: 700; }
 .confirmation-popover-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; }
 .confirmation-popover-actions button, .confirmation-approve { height: 36px; min-width: 92px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
 .confirmation-popover-actions button { border: 1px solid #d7dddf; background: #fff; color: #5d6266; }

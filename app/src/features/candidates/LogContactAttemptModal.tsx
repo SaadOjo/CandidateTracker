@@ -1,6 +1,6 @@
 import { CalendarDays, Clock3, Link as LinkIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { stageLabels } from '../../domain/labels'
 import { ModalOverlay } from '../../components/ui/ModalOverlay'
 import type { Candidate } from '../../domain/types'
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export function LogContactAttemptModal({ candidate, closeTo, kind = 'contact' }: Props) {
+  const navigate = useNavigate()
   const isRejection = kind === 'rejection'
   const title = isRejection ? 'Log Rejection Contact Attempt' : 'Log Contact Attempt'
   const saveLabel = isRejection ? 'Save Rejection Log' : 'Save Contact Log'
@@ -19,7 +20,9 @@ export function LogContactAttemptModal({ candidate, closeTo, kind = 'contact' }:
   const isPreInterview = candidate?.stage === 'pre_interview'
   const options = isRejection ? ['Not Reached', 'Rejection Handled'] : isPreInterview ? ['Contact Successful', 'Pre-Interview Not Conducted', 'Withdrawn', 'Not Reached'] : ['Not Reached', 'Scheduled', 'Withdrawn']
   const [selectedResult, setSelectedResult] = useState<string>(options[0])
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const showInterviewFields = !isRejection && selectedResult === 'Scheduled'
+  const shouldConfirmWithdrawn = selectedResult === 'Withdrawn'
 
   return (
     <ModalOverlay closeTo={closeTo} labelledBy="log-contact-title" surfaceClassName="log-contact-surface">
@@ -81,9 +84,22 @@ export function LogContactAttemptModal({ candidate, closeTo, kind = 'contact' }:
         </section>
 
         <div className="figma-log-footer">
-          <Link to={closeTo}>Cancel</Link>
-          <Link className="save-log-button" to={closeTo}>{saveLabel}</Link>
+          <button className="modal-text-button" onClick={() => navigate(closeTo)}>Cancel</button>
+          <button className="save-log-button" onClick={() => shouldConfirmWithdrawn ? setConfirmOpen(true) : navigate(closeTo)}>{saveLabel}</button>
         </div>
+
+        {confirmOpen && <>
+          <div className="pipeline-confirmation-backdrop" onClick={() => setConfirmOpen(false)} />
+          <div className="confirmation-popover confirmation-popover--log-contact">
+            <h3>Are you sure?</h3>
+            <p><strong>{candidate?.name ?? 'Candidate'}</strong> · {candidate ? stageLabels[candidate.stage] : 'Candidate Step'}</p>
+            <p>This candidate will be marked as withdrawn.</p>
+            <div className="confirmation-popover-actions">
+              <button onClick={() => setConfirmOpen(false)}>Cancel</button>
+              <button className="confirmation-approve" onClick={() => navigate(closeTo)}>Confirm</button>
+            </div>
+          </div>
+        </>}
       </div>
     </ModalOverlay>
   )
