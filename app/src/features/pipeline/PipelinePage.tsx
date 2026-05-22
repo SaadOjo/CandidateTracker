@@ -207,7 +207,7 @@ function showAddLog(role: AppOutletContext['role'], stage: PipelineStage, status
 }
 
 function showOfferReorder(role: AppOutletContext['role'], stage: PipelineStage, status: CandidateStatus) {
-  return (role === 'hm' || role === 'hr') && stage === 'offer_stage' && status === 'approved_for_offer'
+  return (role === 'hm' || role === 'hr') && stage === 'offer_stage' && (status === 'approved_for_offer' || status === 'final_check_sent')
 }
 
 function getOfferRankLabel(index: number) {

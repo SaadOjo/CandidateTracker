@@ -35,6 +35,11 @@ function normalizeCandidates(candidates: Candidate[]) {
       .filter((candidate) => candidate.status === 'offer_accepted')
       .map((candidate) => candidate.projectId),
   )
+  const projectsWithActiveOffer = new Set(
+    candidates
+      .filter((candidate) => candidate.status === 'offer_sent' || candidate.status === 'offer_accepted')
+      .map((candidate) => candidate.projectId),
+  )
 
   return candidates.map((candidate) => {
     const completedPreInterview = !(candidate.stage === 'pre_interview' && (candidate.status === 'waiting_for_contact' || candidate.status === 'not_reached'))
@@ -44,9 +49,15 @@ function normalizeCandidates(candidates: Candidate[]) {
       : candidate.notes
 
     if (!acceptedProjects.has(candidate.projectId) || candidate.status !== 'waitlisted') {
+      const shouldResetFinalCheck = candidate.status === 'final_check_sent' && projectsWithActiveOffer.has(candidate.projectId)
+
       return {
         ...candidate,
         notes: normalizedNotes,
+        status: shouldResetFinalCheck ? 'approved_for_offer' as const : candidate.status,
+        activity: shouldResetFinalCheck
+          ? candidate.activity.filter((item) => item.title !== 'Final Check Sent')
+          : candidate.activity,
       }
     }
 
