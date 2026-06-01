@@ -22,7 +22,7 @@ export function InterimUpdateModal({ candidate, closeTo }: Props) {
 
         <section className="figma-log-section">
           <h2 className="optional-heading"><span>NOTES</span><em>OPTIONAL</em></h2>
-          <textarea placeholder="Add a brief keep-warm update for the candidate..." />
+          <textarea placeholder="" />
         </section>
 
         <div className="figma-log-footer">
