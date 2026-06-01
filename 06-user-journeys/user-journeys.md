@@ -30,6 +30,23 @@ Pre-Interview is the first HR-led step and represents an unscheduled phone scree
 - Can add note
 - If candidate is **Contact Successful**, HM also sees **Process**
 
+### Pre-Interview comments
+Pre-Interview also supports project-level comments.
+
+#### HM Comments
+- Used for optional questions or topics HR should ask during the phone screen
+- Only HM sees and edits HM Comments
+
+#### HR Comments
+- Used for HR-only reminders or shared role-specific notes
+- Only HR sees and edits HR Comments
+
+### Comment rules
+- Comments belong to the **project pre-interview stage**, not to one specific candidate
+- Comments are stored separately from Internal Notes
+- Pre-interview comments should still be visible when reviewing the pre-interview stage
+- Candidate-specific pre-interview notes should continue into later candidate stages through Internal Notes
+
 ### Process options
 - Move to Department Interview Stage
 - Reject
