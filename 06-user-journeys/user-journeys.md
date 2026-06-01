@@ -35,11 +35,11 @@ Pre-Interview also supports project-level comments.
 
 #### HM Comments
 - Used for optional questions or topics HR should ask during the phone screen
-- Only HM sees and edits HM Comments
+- Only HM sees and edits HM Comments button
 
 #### HR Comments
 - Used for HR-only reminders or shared role-specific notes
-- Only HR sees and edits HR Comments
+- Only HR sees and edits HR Comments button
 
 ### Comment rules
 - Comments belong to the **project pre-interview stage**, not to one specific candidate
@@ -52,9 +52,8 @@ Pre-Interview also supports project-level comments.
 - Reject
 
 ### Rules
-- Reject stays at the bottom of the process list
 - Pre-interview HR notes should remain visible in later stages
-- Pre-interview comments and logs should appear in activity history when relevant
+- Pre-interview logs should appear in activity history when relevant
 
 ---
 
@@ -82,8 +81,6 @@ Candidate moves here after successful pre-interview.
 
 ### Rules
 - If a candidate completed Department Interview, there should be HM notes
-- Reject stays at the bottom of the process list
-
 ---
 
 ## 3. HR Interview
@@ -112,7 +109,6 @@ Candidate moves here after department interview.
   - Reject
 
 ### Rules
-- Reject stays at the bottom of the process list
 - "Waiting for Assessment" is no longer used
 - HR interview notes should remain visible later
 - Wage information is HR-only
@@ -153,7 +149,6 @@ then **HR** can send an **Interim Update** from quick actions.
 - Should be saved into activity history
 
 ### Rules
-- Reject stays at the bottom of the process list
 - Contact Info and Log Contact Attempt are not shown in Candidate Review quick actions
 - HR also sees the View button in Candidate Review pipeline
 
@@ -206,7 +201,7 @@ If a project has an **Offer Accepted** candidate:
 ---
 
 ## 6. Rejection Follow-Up
-Rejected and proceeded candidates can appear in Rejection Follow-Up.
+Rejected and proceeded with other candidates can appear in Rejection Follow-Up.
 
 ### Included statuses
 - Rejected
