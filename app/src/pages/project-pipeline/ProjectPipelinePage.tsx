@@ -1,7 +1,8 @@
 import { LoaderCircle, Phone, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { getProject, listCandidates } from '../../data/api'
+import type { ReactNode } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { getProject, listCandidates, updateProjectStageComment } from '../../data/api'
 import { projectStatusLabels, stageLabels, stageOrder, statusLabels } from '../../domain/labels'
 import type { AuthSession, Candidate, CandidateStatus, PipelineStage, Project } from '../../domain/types'
 
@@ -13,8 +14,10 @@ type PipelineColumn = 'candidate' | 'status' | 'contact' | 'interview' | 'action
 
 export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
   const { projectId = '', stage = 'pre_interview' } = useParams()
+  const [searchParams] = useSearchParams()
   const selectedStage = isPipelineStage(stage) ? stage : 'pre_interview'
   const role = session.appRole === 'hm' ? 'hm' : 'hr'
+  const navigate = useNavigate()
   const [project, setProject] = useState<Project | null>(null)
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [projectCandidates, setProjectCandidates] = useState<Candidate[]>([])
@@ -56,7 +59,10 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
   const hasAcceptedOffer = projectCandidates.some((candidate) => candidate.status === 'offer_accepted')
   const status = project?.status === 'active' && hasAcceptedOffer ? 'candidate_accepted' : project?.status ?? 'active'
   const comments = project?.stageComments?.filter((comment) => comment.stage === selectedStage) ?? []
+  const userCommentRole = role === 'hm' ? 'hiring_manager' : 'hr'
+  const userComments = comments.filter((comment) => comment.authorRole === userCommentRole)
   const totalCandidates = project?.candidateCount ?? projectCandidates.length
+  const closeTo = `/projects/${projectId}/pipeline/${selectedStage}`
 
   return (
     <div className="pipeline-screen">
@@ -112,11 +118,12 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
         ))}
       </nav>
 
-      {selectedStage === 'pre_interview' && comments.length > 0 && (
+      {selectedStage === 'pre_interview' && (
         <section className="pre-interview-comments-panel">
-          <div className="pre-interview-comments-grid">
-            <CommentColumn title="HM Comments" items={comments.filter((item) => item.authorRole === 'hiring_manager')} />
-            <CommentColumn title="HR Comments" items={comments.filter((item) => item.authorRole === 'hr')} />
+          <div className="pre-interview-comments-actions">
+            <button className="dark-button" type="button" onClick={() => navigate(`${closeTo}?modal=${role}-comments`)}>
+              {role === 'hm' ? 'HM Comments' : 'HR Comments'}
+            </button>
           </div>
         </section>
       )}
@@ -175,6 +182,29 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
           </span>
         </footer>
       </section>
+
+      {searchParams.get('modal') === 'hm-comments' && role === 'hm' && (
+        <BasicCommentModal
+          title="HM Comments"
+          closeTo={closeTo}
+          initialValue={userComments.map((comment) => comment.body).join('\n\n')}
+          onSave={async (body) => {
+            await updateProjectStageComment(projectId, 'pre_interview', body)
+            await loadPipeline()
+          }}
+        />
+      )}
+      {searchParams.get('modal') === 'hr-comments' && role === 'hr' && (
+        <BasicCommentModal
+          title="HR Comments"
+          closeTo={closeTo}
+          initialValue={userComments.map((comment) => comment.body).join('\n\n')}
+          onSave={async (body) => {
+            await updateProjectStageComment(projectId, 'pre_interview', body)
+            await loadPipeline()
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -241,12 +271,60 @@ function InterviewCell({ candidate }: { candidate: Candidate }) {
   )
 }
 
-function CommentColumn({ title, items }: { title: string; items: Array<{ id: string; body: string }> }) {
+function BasicCommentModal({
+  title,
+  closeTo,
+  initialValue,
+  onSave,
+}: {
+  title: string
+  closeTo: string
+  initialValue: string
+  onSave: (body: string) => Promise<void>
+}) {
+  const navigate = useNavigate()
+  const [value, setValue] = useState(initialValue)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function save() {
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave(value.trim())
+      navigate(closeTo)
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Could not save comment')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <section className="pre-interview-comment-card">
-      <h3>{title}</h3>
-      {items.length > 0 ? items.map((item) => <p key={item.id}>{item.body}</p>) : <p className="pre-interview-comment-empty">No comments yet.</p>}
-    </section>
+    <ModalFrame closeTo={closeTo} className="basic-comment-surface">
+      <section className="basic-comment-modal">
+        <h1>{title}</h1>
+        {error && <p className="request-error">{error}</p>}
+        <textarea value={value} onChange={(event) => setValue(event.target.value)} placeholder="Type your comment here..." />
+        <div className="basic-comment-actions">
+          <Link to={closeTo}>Cancel</Link>
+          <button className="confirmation-approve" disabled={saving} type="button" onClick={() => void save()}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </section>
+    </ModalFrame>
+  )
+}
+
+function ModalFrame({ closeTo, className = '', children }: { closeTo: string; className?: string; children: ReactNode }) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <Link className="modal-scrim-link" to={closeTo} aria-label="Close modal" />
+      <div className={`modal-surface ${className}`}>
+        {children}
+      </div>
+    </div>
   )
 }
 

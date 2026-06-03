@@ -3,6 +3,7 @@ import type {
   Candidate,
   CandidateFilters,
   CandidateTransitionAction,
+  CandidateTransitionInput,
   Project,
   ProjectFormInput,
   ProjectStatus,
@@ -47,10 +48,18 @@ export async function getCandidate(candidateId: string) {
   return apiRequest<Candidate>(`/candidates/${candidateId}`)
 }
 
-export async function transitionCandidate(candidateId: string, action: CandidateTransitionAction) {
+export async function transitionCandidate(candidateId: string, input: CandidateTransitionAction | CandidateTransitionInput) {
+  const body = typeof input === 'string' ? { action: input } : input
   return apiRequest<Candidate>(`/candidates/${candidateId}/transition`, {
     method: 'POST',
-    body: JSON.stringify({ action }),
+    body: JSON.stringify(body),
+  })
+}
+
+export async function updateProjectStageComment(projectId: string, stage: string, body: string) {
+  return apiRequest<Project>(`/projects/${projectId}/stage-comments/${stage}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ body }),
   })
 }
 

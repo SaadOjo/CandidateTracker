@@ -35,7 +35,9 @@ export type CandidateTransitionAction =
   | 'mark_not_reached'
   | 'withdraw'
   | 'move_to_department_interview'
+  | 'schedule_department_interview'
   | 'move_to_hr_interview'
+  | 'schedule_hr_interview'
   | 'send_assessment'
   | 'move_to_candidate_review'
   | 'approve_for_offer'
@@ -44,6 +46,14 @@ export type CandidateTransitionAction =
   | 'send_offer'
   | 'offer_accepted'
   | 'reject'
+
+export interface CandidateTransitionInput {
+  action: CandidateTransitionAction
+  notes?: string
+  occurredAt?: string
+  interviewStartAt?: string
+  meetingUrl?: string
+}
 
 export interface User {
   id: string
@@ -117,6 +127,7 @@ export interface CandidateNote {
 
 export interface CandidateActivityEvent {
   id: string
+  index?: number
   title: string
   subtitle?: string | null
   occurredAt?: string

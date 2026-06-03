@@ -8,10 +8,12 @@ import { createDummyAuthService } from './auth.js'
 import { prisma } from './db.js'
 import {
   CandidateTransitionSchema,
+  CandidateStageSchema,
   CreateProjectSchema,
   ListCandidatesQuerySchema,
   ListProjectsQuerySchema,
   ListUsersQuerySchema,
+  UpdateProjectStageCommentSchema,
   UpdateProjectSchema,
 } from './domain.js'
 
@@ -123,6 +125,51 @@ app.get('/projects', async (request) => {
 
 app.get('/projects/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: projectResponseInclude,
+  })
+
+  if (!project) return reply.status(404).send({ error: 'Project not found' })
+  return toProjectResponse(project)
+})
+
+app.patch('/projects/:projectId/stage-comments/:stage', async (request, reply) => {
+  const session = await authService.requireAppRole(request, ['admin', 'hr', 'hm'])
+  const { projectId, stage } = request.params as { projectId: string; stage: string }
+  const parsedStage = CandidateStageSchema.parse(stage)
+  const input = UpdateProjectStageCommentSchema.parse(request.body)
+  const authorRole = session.appRole === 'hm' ? 'hiring_manager' : 'hr'
+
+  await requireProject(projectId)
+
+  const existing = await prisma.projectStageComment.findFirst({
+    where: {
+      projectId,
+      stage: parsedStage,
+      authorUserId: session.userId,
+      authorRole,
+    },
+    select: { id: true },
+  })
+
+  if (existing) {
+    await prisma.projectStageComment.update({
+      where: { id: existing.id },
+      data: { body: input.body },
+    })
+  } else {
+    await prisma.projectStageComment.create({
+      data: {
+        projectId,
+        stage: parsedStage,
+        authorUserId: session.userId,
+        authorRole,
+        body: input.body,
+      },
+    })
+  }
+
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: projectResponseInclude,
@@ -278,7 +325,7 @@ app.post('/candidates/:candidateId/transition', async (request, reply) => {
 
   if (!application) return reply.status(404).send({ error: 'Candidate not found' })
 
-  await applyCandidateTransition(application, input.action, session.userId, session.role)
+  await applyCandidateTransition(application, input, session.userId, session.role)
 
   const updated = await prisma.candidateApplication.findUnique({
     where: { id: application.id },
@@ -291,11 +338,12 @@ app.post('/candidates/:candidateId/transition', async (request, reply) => {
 
 async function applyCandidateTransition(
   application: Pick<CandidateApplicationWithResponse, 'id' | 'projectId' | 'stage' | 'status'>,
-  action: ReturnType<typeof CandidateTransitionSchema.parse>['action'],
+  input: ReturnType<typeof CandidateTransitionSchema.parse>,
   actorUserId: string,
   actorRole: CandidateApplicationWithResponse['activityEvents'][number]['actorRole'],
 ) {
-  const now = new Date()
+  const now = input.occurredAt ?? new Date()
+  const action = input.action
 
   await prisma.$transaction(async (tx) => {
     const updateData: Prisma.CandidateApplicationUpdateInput = {}
@@ -306,14 +354,15 @@ async function applyCandidateTransition(
     if (action === 'mark_contact_successful') {
       updateData.status = 'scheduled'
       title = application.stage === 'pre_interview' ? 'Pre-Interview Conducted Successfully' : 'Contact Successful'
-      await createContactAttempt(tx, application, 'contact_successful', actorUserId, now)
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
+      await createContactAttempt(tx, application, 'contact_successful', actorUserId, now, input.notes)
     }
 
     if (action === 'mark_not_reached') {
       updateData.status = 'not_reached'
       title = 'Contact Attempt Logged'
-      subtitle = 'Candidate was not reached.'
-      await createContactAttempt(tx, application, 'not_reached', actorUserId, now)
+      subtitle = input.notes ?? 'Candidate was not reached.'
+      await createContactAttempt(tx, application, 'not_reached', actorUserId, now, input.notes)
     }
 
     if (action === 'withdraw') {
@@ -321,49 +370,71 @@ async function applyCandidateTransition(
       updateData.closedAt = now
       updateData.closureReason = 'Candidate withdrew from the process.'
       title = 'Candidate Withdrawn'
-      await createContactAttempt(tx, application, 'withdrawn', actorUserId, now)
+      subtitle = input.notes ?? 'Candidate withdrew from the process.'
+      await createContactAttempt(tx, application, 'withdrawn', actorUserId, now, input.notes)
     }
 
     if (action === 'move_to_department_interview') {
       updateData.stage = 'department_interview'
-      updateData.status = 'scheduled'
+      updateData.status = 'waiting_for_contact'
       title = 'Moved to Department Interview Stage'
-      await createInterview(tx, application.id, application.projectId, 'department_interview', actorUserId, now)
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
+    }
+
+    if (action === 'schedule_department_interview') {
+      updateData.status = 'scheduled'
+      title = 'Department Interview Scheduled'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
+      await createContactAttempt(tx, application, 'scheduled', actorUserId, now, input.notes)
+      await createInterview(tx, application.id, application.projectId, 'department_interview', actorUserId, input.interviewStartAt ?? now, input.meetingUrl)
     }
 
     if (action === 'move_to_hr_interview') {
       updateData.stage = 'hr_interview'
-      updateData.status = 'scheduled'
+      updateData.status = 'waiting_for_contact'
       title = 'Moved to HR Interview Stage'
-      await createInterview(tx, application.id, application.projectId, 'hr_interview', actorUserId, now)
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
+    }
+
+    if (action === 'schedule_hr_interview') {
+      updateData.status = 'scheduled'
+      title = 'HR Interview Scheduled'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
+      await createContactAttempt(tx, application, 'scheduled', actorUserId, now, input.notes)
+      await createInterview(tx, application.id, application.projectId, 'hr_interview', actorUserId, input.interviewStartAt ?? now, input.meetingUrl)
     }
 
     if (action === 'send_assessment') {
       updateData.status = 'assessment_sent'
       title = 'Assessment Sent'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
     }
 
     if (action === 'move_to_candidate_review') {
       updateData.stage = 'manager_review'
       updateData.status = 'waitlisted'
       title = 'Moved to Candidate Review'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
     }
 
     if (action === 'approve_for_offer') {
       updateData.stage = 'offer_stage'
       updateData.status = 'approved_for_offer'
       title = 'Approved for Offer'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
       await ensureOfferQueueItem(tx, application.id, application.projectId, 'waiting')
     }
 
     if (action === 'waitlist') {
       updateData.status = 'waitlisted'
       title = 'Candidate Waitlisted'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
     }
 
     if (action === 'send_final_check') {
       updateData.status = 'final_check_sent'
       title = 'Final Check Sent'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
       const queueItem = await ensureOfferQueueItem(tx, application.id, application.projectId, 'active')
       await upsertOffer(tx, application.id, application.projectId, queueItem.id, 'final_check_sent', actorUserId, now)
     }
@@ -371,6 +442,7 @@ async function applyCandidateTransition(
     if (action === 'send_offer') {
       updateData.status = 'offer_sent'
       title = 'Offer Sent'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
       const queueItem = await ensureOfferQueueItem(tx, application.id, application.projectId, 'active')
       await upsertOffer(tx, application.id, application.projectId, queueItem.id, 'offer_sent', actorUserId, now)
     }
@@ -378,6 +450,7 @@ async function applyCandidateTransition(
     if (action === 'offer_accepted') {
       updateData.status = 'offer_accepted'
       title = 'Offer Accepted'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
       const queueItem = await ensureOfferQueueItem(tx, application.id, application.projectId, 'accepted')
       await upsertOffer(tx, application.id, application.projectId, queueItem.id, 'offer_accepted', actorUserId, now)
       await tx.project.update({
@@ -391,6 +464,7 @@ async function applyCandidateTransition(
       updateData.closedAt = now
       updateData.closureReason = 'Rejected from workflow.'
       title = application.stage === 'offer_stage' ? 'Offer Rejected' : 'Candidate Rejected'
+      subtitle = input.notes ?? defaultActivitySubtitle(action, application.stage)
       await tx.rejectionFollowUp.upsert({
         where: { candidateApplicationId: application.id },
         create: {
@@ -433,9 +507,10 @@ async function applyCandidateTransition(
 async function createContactAttempt(
   tx: Prisma.TransactionClient,
   application: Pick<CandidateApplicationWithResponse, 'id' | 'stage'>,
-  result: 'contact_successful' | 'not_reached' | 'withdrawn',
+  result: 'contact_successful' | 'not_reached' | 'withdrawn' | 'scheduled',
   actorUserId: string,
   attemptedAt: Date,
+  notes?: string,
 ) {
   await tx.contactAttempt.create({
     data: {
@@ -443,6 +518,7 @@ async function createContactAttempt(
       context: getContactContext(application.stage),
       result,
       attemptedAt,
+      notes,
       createdByUserId: actorUserId,
     },
   })
@@ -454,11 +530,10 @@ async function createInterview(
   projectId: string,
   type: 'department_interview' | 'hr_interview',
   actorUserId: string,
-  now: Date,
+  interviewStartAt: Date,
+  meetingUrl?: string,
 ) {
-  const scheduledStartAt = new Date(now)
-  scheduledStartAt.setDate(scheduledStartAt.getDate() + 2)
-  scheduledStartAt.setHours(10, 0, 0, 0)
+  const scheduledStartAt = new Date(interviewStartAt)
   const scheduledEndAt = new Date(scheduledStartAt)
   scheduledEndAt.setHours(scheduledEndAt.getHours() + 1)
 
@@ -470,10 +545,27 @@ async function createInterview(
       scheduledStartAt,
       scheduledEndAt,
       timezone: 'Europe/Istanbul',
-      meetingUrl: `https://meet.example.com/${candidateApplicationId}-${type}`,
+      meetingUrl: meetingUrl ?? `https://meet.example.com/${candidateApplicationId}-${type}`,
       createdByUserId: actorUserId,
     },
   })
+}
+
+function defaultActivitySubtitle(action: string, stage: string) {
+  if (action === 'mark_contact_successful') return 'Contact attempt completed.'
+  if (action === 'move_to_department_interview') return 'Candidate moved from Pre-Interview to Department Interview.'
+  if (action === 'schedule_department_interview') return 'Department interview scheduled.'
+  if (action === 'move_to_hr_interview') return 'Candidate moved from Department Interview to HR Interview.'
+  if (action === 'schedule_hr_interview') return 'HR interview scheduled.'
+  if (action === 'send_assessment') return 'Assessment sent to candidate.'
+  if (action === 'move_to_candidate_review') return 'Candidate moved to review.'
+  if (action === 'approve_for_offer') return 'Candidate approved for offer.'
+  if (action === 'waitlist') return 'Candidate added to waitlist.'
+  if (action === 'send_final_check') return 'Final check sent to candidate.'
+  if (action === 'send_offer') return 'Offer sent to candidate.'
+  if (action === 'offer_accepted') return 'Offer accepted by candidate.'
+  if (action === 'reject') return 'Candidate rejected from workflow.'
+  return `Contact activity for ${stage.replaceAll('_', ' ')}.`
 }
 
 async function ensureOfferQueueItem(

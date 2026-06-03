@@ -111,6 +111,7 @@ export function CandidateDetailPage({ session }: CandidateDetailPageProps) {
           </div>
 
           {resumeOpen && <InlineResume candidate={candidate} />}
+          {candidate.stage === 'pre_interview' && project && <PreInterviewCommentsSection project={project} />}
           {candidate.status === 'scheduled' && candidate.interview && <ScheduledInterviewCard candidate={candidate} />}
           {notes.length > 0 && <InternalNotes notes={notes} role={role} project={project} />}
           <ActivityHistory candidate={candidate} project={project} />
@@ -148,6 +149,31 @@ export function CandidateDetailPage({ session }: CandidateDetailPageProps) {
         />
       )}
     </>
+  )
+}
+
+function PreInterviewCommentsSection({ project }: { project: Project }) {
+  const comments = project.stageComments?.filter((comment) => comment.stage === 'pre_interview') ?? []
+  const hmComments = comments.filter((comment) => comment.authorRole === 'hiring_manager')
+  const hrComments = comments.filter((comment) => comment.authorRole === 'hr')
+  if (hmComments.length === 0 && hrComments.length === 0) return null
+
+  return (
+    <section className="pre-interview-comments-panel pre-interview-comments-panel--detail">
+      <div className="pre-interview-comments-grid">
+        <CommentColumn title="HM Comments" items={hmComments} />
+        <CommentColumn title="HR Comments" items={hrComments} />
+      </div>
+    </section>
+  )
+}
+
+function CommentColumn({ title, items }: { title: string; items: Array<{ id: string; body: string }> }) {
+  return (
+    <section className="pre-interview-comment-card">
+      <h3>{title}</h3>
+      {items.length > 0 ? items.map((item) => <p key={item.id}>{item.body}</p>) : <p className="pre-interview-comment-empty">No comments yet.</p>}
+    </section>
   )
 }
 
@@ -528,15 +554,27 @@ function LogContactAttemptModal({
   onChanged: () => Promise<void>
 }) {
   const navigate = useNavigate()
-  const [result, setResult] = useState<'contact_successful' | 'not_reached' | 'withdrawn'>('contact_successful')
+  const options = getContactResultOptions(candidate)
+  const [result, setResult] = useState<ContactLogResult>(options[0])
+  const [attemptedAt, setAttemptedAt] = useState(() => toDateTimeLocalValue(new Date()))
+  const [interviewStartAt, setInterviewStartAt] = useState(() => toDateTimeLocalValue(defaultInterviewDate()))
+  const [meetingUrl, setMeetingUrl] = useState(() => `https://meet.example.com/${candidate.id}`)
+  const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const showInterviewFields = result === 'scheduled'
 
   async function saveLog() {
     setSaving(true)
     setError(null)
     try {
-      await transitionCandidate(candidate.id, getContactTransitionAction(result))
+      await transitionCandidate(candidate.id, {
+        action: getContactTransitionAction(candidate, result),
+        notes: notes.trim() || undefined,
+        occurredAt: new Date(attemptedAt).toISOString(),
+        interviewStartAt: showInterviewFields ? new Date(interviewStartAt).toISOString() : undefined,
+        meetingUrl: showInterviewFields ? meetingUrl.trim() || undefined : undefined,
+      })
       await onChanged()
       navigate(closeTo)
     } catch (requestError) {
@@ -553,23 +591,35 @@ function LogContactAttemptModal({
         <p className="modal-subtitle">{candidate.name} · {stageLabels[candidate.stage]}</p>
         {error && <p className="request-error">{error}</p>}
         <div className="figma-log-section">
-          <h2>Result</h2>
-          <label className="radio-option">
-            <input checked={result === 'contact_successful'} name="result" type="radio" onChange={() => setResult('contact_successful')} />
-            Contact Successful
-          </label>
-          <label className="radio-option">
-            <input checked={result === 'not_reached'} name="result" type="radio" onChange={() => setResult('not_reached')} />
-            Not Reached
-          </label>
-          <label className="radio-option">
-            <input checked={result === 'withdrawn'} name="result" type="radio" onChange={() => setResult('withdrawn')} />
-            Withdrawn
-          </label>
+          <h2>Attempt Result</h2>
+          <div className="radio-stack">
+            {options.map((option) => (
+              <label className="radio-option" key={option}>
+                <input checked={result === option} name="result" type="radio" onChange={() => setResult(option)} />
+                {getContactResultLabel(option)}
+              </label>
+            ))}
+          </div>
         </div>
         <div className="figma-log-section">
-          <h2>Notes</h2>
-          <textarea placeholder="Add contact notes..." />
+          <h2>Attempt Date &amp; Time*</h2>
+          <input className="combined-date-field combined-date-input" type="datetime-local" value={attemptedAt} onChange={(event) => setAttemptedAt(event.target.value)} />
+        </div>
+        {showInterviewFields && (
+          <>
+            <div className="figma-log-section">
+              <h2>Interview Date &amp; Time*</h2>
+              <input className="combined-date-field combined-date-input" type="datetime-local" value={interviewStartAt} onChange={(event) => setInterviewStartAt(event.target.value)} />
+            </div>
+            <div className="figma-log-section">
+              <h2>Meeting URL*</h2>
+              <input className="combined-date-field combined-date-input" value={meetingUrl} onChange={(event) => setMeetingUrl(event.target.value)} />
+            </div>
+          </>
+        )}
+        <div className="figma-log-section">
+          <h2 className="optional-heading"><span>Notes</span><em>Optional</em></h2>
+          <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Briefly describe the outcome of the call..." />
         </div>
         <footer className="figma-log-footer">
           <Link to={closeTo}>Cancel</Link>
@@ -681,7 +731,24 @@ function getProcessActions(candidate: Candidate, role: 'hr' | 'hm'): Array<{ lab
   return []
 }
 
-function getContactTransitionAction(result: 'contact_successful' | 'not_reached' | 'withdrawn'): CandidateTransitionAction {
+type ContactLogResult = 'contact_successful' | 'scheduled' | 'not_reached' | 'withdrawn'
+
+function getContactResultOptions(candidate: Candidate): ContactLogResult[] {
+  if (candidate.stage === 'pre_interview') return ['contact_successful', 'not_reached', 'withdrawn']
+  return ['scheduled', 'not_reached', 'withdrawn']
+}
+
+function getContactResultLabel(result: ContactLogResult) {
+  if (result === 'contact_successful') return 'Contact Successful'
+  if (result === 'scheduled') return 'Scheduled'
+  if (result === 'not_reached') return 'Not Reached'
+  return 'Withdrawn'
+}
+
+function getContactTransitionAction(candidate: Candidate, result: ContactLogResult): CandidateTransitionAction {
+  if (result === 'scheduled') {
+    return candidate.stage === 'hr_interview' ? 'schedule_hr_interview' : 'schedule_department_interview'
+  }
   if (result === 'not_reached') return 'mark_not_reached'
   if (result === 'withdrawn') return 'withdraw'
   return 'mark_contact_successful'
@@ -712,11 +779,16 @@ function getActivityExplanation(title: string, candidate: Candidate, project: Pr
   const hiringManager = project?.hiringManager ?? '—'
   const hrManager = project?.assignedHr?.[0] ?? '—'
 
-  if (title.includes('Department Interview')) return `Scheduled by HR Manager - ${hrManager}`
+  if (title === 'Moved to Department Interview Stage') return `Moved by HR Manager - ${hrManager}`
+  if (title === 'Department Interview Scheduled') return `Scheduled by HR Manager - ${hrManager}`
+  if (title === 'Moved to HR Interview Stage') return `Moved by Hiring Manager - ${hiringManager}`
+  if (title === 'HR Interview Scheduled') return `Scheduled by HR Manager - ${hrManager}`
+  if (title.includes('Contact') || title.includes('Pre-Interview') || title.includes('Withdrawn')) return `Contact at ${stageLabels[candidate.stage]} · HR Manager - ${hrManager}`
+  if (title.includes('Department Interview')) return `Hiring Manager - ${hiringManager}`
   if (title.includes('HR Interview')) return `HR Manager - ${hrManager}`
   if (title.includes('Offer') || candidate.stage === 'offer_stage') return `HR Manager - ${hrManager}`
   if (title.includes('Hiring Manager') || candidate.stage === 'manager_review') return `Hiring Manager - ${hiringManager}`
-  return ''
+  return `Activity at ${stageLabels[candidate.stage]}`
 }
 
 function readSavedNotes(candidateId: string) {
@@ -743,4 +815,17 @@ function formatTime(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(date)
+}
+
+function defaultInterviewDate() {
+  const date = new Date()
+  date.setDate(date.getDate() + 2)
+  date.setHours(10, 0, 0, 0)
+  return date
+}
+
+function toDateTimeLocalValue(date: Date) {
+  const offset = date.getTimezoneOffset()
+  const local = new Date(date.getTime() - offset * 60 * 1000)
+  return local.toISOString().slice(0, 16)
 }

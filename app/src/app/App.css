@@ -1192,6 +1192,16 @@ button:disabled {
   width: var(--pipeline-content-width, 694px);
 }
 
+.pre-interview-comments-panel--detail {
+  margin-left: 0;
+  width: min(694px, 100%);
+}
+
+.pre-interview-comments-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .pre-interview-comments-grid {
   display: grid;
   gap: 16px;
@@ -1224,6 +1234,61 @@ button:disabled {
 .pre-interview-comment-empty {
   color: #7a8388 !important;
   font-style: italic;
+}
+
+.basic-comment-surface {
+  width: 520px;
+}
+
+.basic-comment-modal {
+  background: #ffffff;
+  padding: 28px;
+}
+
+.basic-comment-modal h1 {
+  color: #2d3435;
+  font-family: Manrope, Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 34px;
+  margin: 0 0 18px;
+}
+
+.basic-comment-modal textarea {
+  background: #f0f2f3;
+  border: 0;
+  border-radius: 4px;
+  color: #697386;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 180px;
+  outline: 0;
+  padding: 14px 16px;
+  resize: vertical;
+  width: 100%;
+}
+
+.basic-comment-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.basic-comment-actions a,
+.basic-comment-actions button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d7dddf;
+  border-radius: 4px;
+  color: #5d6266;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  height: 36px;
+  justify-content: center;
+  min-width: 88px;
+  text-decoration: none;
 }
 
 /* Candidate detail */
@@ -1510,6 +1575,42 @@ button:disabled {
   padding: 14px 16px;
   resize: vertical;
   width: 100%;
+}
+
+.radio-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.combined-date-field {
+  align-items: center;
+  background: #f0f2f3;
+  border: 0;
+  border-radius: 4px;
+  color: #697386;
+  display: flex;
+  font-size: 14px;
+  min-height: 44px;
+  padding: 0 14px;
+  width: 100%;
+}
+
+.combined-date-input {
+  font: inherit;
+  outline: 0;
+}
+
+.optional-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.optional-heading em {
+  color: #9aa2a8;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .hr-note-form label {

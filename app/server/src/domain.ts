@@ -24,12 +24,19 @@ export const CandidateStatusSchema = z.enum([
   'proceeded_with_another_candidate',
 ])
 
+const OptionalTextSchema = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z.string().trim().optional(),
+)
+
 export const CandidateTransitionActionSchema = z.enum([
   'mark_contact_successful',
   'mark_not_reached',
   'withdraw',
   'move_to_department_interview',
+  'schedule_department_interview',
   'move_to_hr_interview',
+  'schedule_hr_interview',
   'send_assessment',
   'move_to_candidate_review',
   'approve_for_offer',
@@ -42,6 +49,14 @@ export const CandidateTransitionActionSchema = z.enum([
 
 export const CandidateTransitionSchema = z.object({
   action: CandidateTransitionActionSchema,
+  notes: OptionalTextSchema,
+  occurredAt: z.coerce.date().optional(),
+  interviewStartAt: z.coerce.date().optional(),
+  meetingUrl: OptionalTextSchema,
+})
+
+export const UpdateProjectStageCommentSchema = z.object({
+  body: z.string().trim(),
 })
 
 export const ProjectStatusSchema = z.enum(['active', 'archived', 'closed'])
@@ -49,11 +64,6 @@ export const ProjectStatusSchema = z.enum(['active', 'archived', 'closed'])
 export const UserRoleSchema = z.enum(['admin', 'hr_manager', 'hiring_manager'])
 
 export const ImportModeSchema = z.enum(['auto_sync', 'manual_import'])
-
-const OptionalTextSchema = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-  z.string().trim().optional(),
-)
 
 const ProjectAssignmentSchema = {
   hiringManagerUserIds: z.array(z.string().min(1)).min(1),
