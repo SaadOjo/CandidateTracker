@@ -13,9 +13,20 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 const DEV_AUTH_USER_ID = import.meta.env.VITE_DEV_AUTH_USER_ID
+const DEV_AUTH_STORAGE_KEY = 'candidate-tracker:dev-user-id'
 
 export async function getCurrentSession() {
   return apiRequest<AuthSession>('/auth/me')
+}
+
+export function getDevAuthUserId() {
+  if (typeof window === 'undefined') return DEV_AUTH_USER_ID
+  return window.sessionStorage.getItem(DEV_AUTH_STORAGE_KEY) ?? DEV_AUTH_USER_ID
+}
+
+export function setDevAuthUserId(userId: string) {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.setItem(DEV_AUTH_STORAGE_KEY, userId)
 }
 
 export async function listUsers(role?: UserRole) {
@@ -98,9 +109,10 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function buildHeaders(init?: RequestInit) {
+  const devAuthUserId = getDevAuthUserId()
   return {
     ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-    ...(DEV_AUTH_USER_ID ? { 'x-dev-user-id': DEV_AUTH_USER_ID } : {}),
+    ...(devAuthUserId ? { 'x-dev-user-id': devAuthUserId } : {}),
     ...init?.headers,
   }
 }

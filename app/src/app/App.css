@@ -702,6 +702,13 @@ button:disabled {
   padding: 0 33px;
 }
 
+.topbar-account-group {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
 .breadcrumbs {
   align-items: center;
   color: #73737d;
@@ -770,6 +777,32 @@ button:disabled {
   color: #6c7378;
   font-size: 11px;
   font-weight: 700;
+}
+
+.dev-account-switcher {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.dev-account-switcher span {
+  color: #6c7378;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dev-account-switcher select {
+  background: #f7f9fa;
+  border: 1px solid #dce2e4;
+  border-radius: 8px;
+  color: #30363d;
+  font-size: 12px;
+  font-weight: 700;
+  height: 34px;
+  max-width: 230px;
+  outline: 0;
+  padding: 0 10px;
 }
 
 .projects-screen {

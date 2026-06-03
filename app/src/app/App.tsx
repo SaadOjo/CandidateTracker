@@ -1,8 +1,8 @@
 import { Briefcase, ChevronRight, FolderKanban, UserRound } from 'lucide-react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { appRoleLabels, stageLabels, userRoleLabels } from '../domain/labels'
-import { getCandidate, getCurrentSession, getProject } from '../data/api'
-import type { AuthSession, Candidate, Project } from '../domain/types'
+import { getCandidate, getCurrentSession, getProject, listUsers, setDevAuthUserId } from '../data/api'
+import type { AuthSession, Candidate, Project, User } from '../domain/types'
 import { CandidateDetailPage } from '../pages/candidate-detail/CandidateDetailPage'
 import { ProjectPipelinePage } from '../pages/project-pipeline/ProjectPipelinePage'
 import { ProjectsPage } from '../pages/projects/ProjectsPage'
@@ -20,6 +20,8 @@ export function App() {
 
     async function loadSession() {
       try {
+        const devUserId = new URLSearchParams(location.search).get('devUserId')
+        if (devUserId) setDevAuthUserId(devUserId)
         const currentSession = await getCurrentSession()
         if (active) setSession(currentSession)
       } catch (error) {
@@ -32,7 +34,7 @@ export function App() {
     return () => {
       active = false
     }
-  }, [])
+  }, [location.search])
 
   if (sessionError) {
     return (
@@ -81,14 +83,17 @@ export function App() {
       <div className="workspace">
         <header className="topbar">
           <Breadcrumbs pathname={location.pathname} />
-          <div className="account-chip" aria-label="Current account">
-            <span className="tool-icon">
-              <UserRound size={17} />
-            </span>
-            <span className="account-copy">
-              <strong>{userRoleLabels[session.role] ?? appRoleLabels[session.appRole]}</strong>
-              <small>{session.name}</small>
-            </span>
+          <div className="topbar-account-group">
+            <div className="account-chip" aria-label="Current account">
+              <span className="tool-icon">
+                <UserRound size={17} />
+              </span>
+              <span className="account-copy">
+                <strong>{userRoleLabels[session.role] ?? appRoleLabels[session.appRole]}</strong>
+                <small>{session.name}</small>
+              </span>
+            </div>
+            <DevAccountSwitcher currentUserId={session.userId} onChanged={setSession} />
           </div>
         </header>
 
@@ -109,6 +114,65 @@ export function App() {
         </main>
       </div>
     </div>
+  )
+}
+
+function DevAccountSwitcher({
+  currentUserId,
+  onChanged,
+}: {
+  currentUserId: string
+  onChanged: (session: AuthSession) => void
+}) {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadUsers() {
+      try {
+        const items = await listUsers()
+        if (active) setUsers(items)
+      } catch {
+        if (active) setUsers([])
+      }
+    }
+
+    void loadUsers()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function switchAccount(userId: string) {
+    setLoading(true)
+    try {
+      setDevAuthUserId(userId)
+      onChanged(await getCurrentSession())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (users.length === 0) return null
+
+  return (
+    <label className="dev-account-switcher">
+      <span>Dev account</span>
+      <select
+        disabled={loading}
+        value={currentUserId}
+        onChange={(event) => void switchAccount(event.target.value)}
+      >
+        {users.map((user) => (
+          <option key={user.id} value={user.id}>
+            {user.name} · {userRoleLabels[user.role]}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
