@@ -1,11 +1,22 @@
-import type { CandidateStatus, PipelineStage, ProjectStatus } from './types'
+import type { CandidateStatus, PipelineStage, ProjectStatus, SessionAppRole, UserRole } from './types'
 
-export const stageLabels: Record<PipelineStage, string> = {
-  pre_interview: '1. Pre-Interview',
-  department_interview: '2. Department Interview',
-  hr_interview: '3. HR Interview',
-  manager_review: '4. Candidate Review',
-  offer_stage: '5. Offer Stage',
+export const appRoleLabels: Record<SessionAppRole, string> = {
+  admin: 'Admin',
+  hr: 'HR',
+  hm: 'Hiring Manager',
+}
+
+export const projectStatusLabels: Record<ProjectStatus | 'candidate_accepted', string> = {
+  active: 'ACTIVE',
+  archived: 'ARCHIVED',
+  closed: 'CLOSED',
+  candidate_accepted: 'CANDIDATE ACCEPTED',
+}
+
+export const userRoleLabels: Record<UserRole, string> = {
+  admin: 'Admin',
+  hr_manager: 'HR Manager',
+  hiring_manager: 'Hiring Manager',
 }
 
 export const stageOrder: PipelineStage[] = [
@@ -15,6 +26,14 @@ export const stageOrder: PipelineStage[] = [
   'manager_review',
   'offer_stage',
 ]
+
+export const stageLabels: Record<PipelineStage, string> = {
+  pre_interview: '1. Pre-Interview',
+  department_interview: '2. Department Interview',
+  hr_interview: '3. HR Interview',
+  manager_review: '4. Candidate Review',
+  offer_stage: '5. Offer Stage',
+}
 
 export const statusLabels: Record<CandidateStatus, string> = {
   waiting_for_contact: 'Waiting for Contact',
@@ -30,9 +49,4 @@ export const statusLabels: Record<CandidateStatus, string> = {
   offer_rejected: 'Offer Rejected',
   offer_accepted: 'Offer Accepted',
   proceeded_with_another_candidate: 'Proceeded with Another Candidate',
-}
-
-export const projectStatusLabels: Record<ProjectStatus, string> = {
-  active: 'ACTIVE',
-  archived: 'ARCHIVED',
 }

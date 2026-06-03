@@ -1,6 +1,6 @@
 # Screen discrepancy pass
 
-Compared implemented screens against `figma/example-ss`.
+Compared implemented screens against `design/figma/example-ss`.
 
 ## Projects Page
 - Mostly aligned after previous pass.

@@ -4,11 +4,11 @@
  * Import raw Figma file context into this repository.
  *
  * Usage:
- *   FIGMA_ACCESS_TOKEN=... FIGMA_FILE_KEY=... node figma/import-figma.mjs
+ *   FIGMA_ACCESS_TOKEN=... FIGMA_FILE_KEY=... node design/figma/import-figma.mjs
  *
  * Optional:
- *   FIGMA_OUTPUT_DIR=figma/download node figma/import-figma.mjs
- *   FIGMA_FILE_KEY=... FIGMA_ACCESS_TOKEN=... node figma/import-figma.mjs --file-key ... --token ...
+ *   FIGMA_OUTPUT_DIR=design/figma/download node design/figma/import-figma.mjs
+ *   FIGMA_FILE_KEY=... FIGMA_ACCESS_TOKEN=... node design/figma/import-figma.mjs --file-key ... --token ...
  *
  * The importer intentionally preserves the raw Figma API response as the
  * source of truth, then writes smaller extracted/indexed files for easier use.
@@ -28,16 +28,16 @@ function readArg(name) {
 
 const token = readArg("token") || process.env.FIGMA_ACCESS_TOKEN;
 const fileKey = readArg("file-key") || process.env.FIGMA_FILE_KEY;
-const outputDir = readArg("output-dir") || process.env.FIGMA_OUTPUT_DIR || "figma/download";
+const outputDir = readArg("output-dir") || process.env.FIGMA_OUTPUT_DIR || "design/figma/download";
 
 if (!token || !fileKey) {
   console.error(`Missing required Figma credentials.
 
 Provide both values using environment variables:
-  FIGMA_ACCESS_TOKEN=your_token FIGMA_FILE_KEY=your_file_key node figma/import-figma.mjs
+  FIGMA_ACCESS_TOKEN=your_token FIGMA_FILE_KEY=your_file_key node design/figma/import-figma.mjs
 
 Or using CLI flags:
-  node figma/import-figma.mjs --token your_token --file-key your_file_key
+  node design/figma/import-figma.mjs --token your_token --file-key your_file_key
 `);
   process.exit(1);
 }

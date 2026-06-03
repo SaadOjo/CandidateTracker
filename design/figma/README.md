@@ -7,7 +7,7 @@ This folder contains a small importer that downloads the raw Figma REST API docu
 Running the importer creates:
 
 ```txt
-figma/download/
+design/figma/download/
   metadata.json
   index.json
   raw/
@@ -25,19 +25,19 @@ figma/download/
 ## Run
 
 ```bash
-FIGMA_ACCESS_TOKEN="your_token" FIGMA_FILE_KEY="your_file_key" node figma/import-figma.mjs
+FIGMA_ACCESS_TOKEN="your_token" FIGMA_FILE_KEY="your_file_key" node design/figma/import-figma.mjs
 ```
 
 Or:
 
 ```bash
-node figma/import-figma.mjs --token "your_token" --file-key "your_file_key"
+node design/figma/import-figma.mjs --token "your_token" --file-key "your_file_key"
 ```
 
 Optional output directory:
 
 ```bash
-FIGMA_OUTPUT_DIR="figma/download" FIGMA_ACCESS_TOKEN="your_token" FIGMA_FILE_KEY="your_file_key" node figma/import-figma.mjs
+FIGMA_OUTPUT_DIR="design/figma/download" FIGMA_ACCESS_TOKEN="your_token" FIGMA_FILE_KEY="your_file_key" node design/figma/import-figma.mjs
 ```
 
 ## Required info
