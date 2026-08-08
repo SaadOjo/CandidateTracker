@@ -1,0 +1,464 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  oidcSubject String   @unique @map("oidc_subject")
+  email       String   @unique
+  name        String
+  role        Role
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  activityEvents       ActivityEvent[]       @relation("ActivityActor")
+  candidateNotes       CandidateNote[]       @relation("CandidateNoteAuthor")
+  contactAttempts      ContactAttempt[]      @relation("ContactAttemptCreator")
+  createdFiles         File[]                @relation("FileCreator")
+  createdInterviews    Interview[]           @relation("InterviewCreator")
+  createdOffers        Offer[]               @relation("OfferCreator")
+  createdProjects      Project[]             @relation("ProjectCreator")
+  memberships          ProjectMember[]
+  projectStageComments ProjectStageComment[]
+
+  @@map("users")
+}
+
+model Project {
+  id                 String        @id @default(cuid())
+  name               String
+  position           String
+  status             ProjectStatus @default(active)
+  notes              String?
+  closureReason      String?       @map("closure_reason")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  archivedAt         DateTime?     @map("archived_at")
+  closedAt           DateTime?     @map("closed_at")
+  createdByUserId    String?       @map("created_by_user_id")
+  hiredApplicationId String?       @unique @map("hired_application_id")
+
+  activityEvents     ActivityEvent[]
+  applications       CandidateApplication[]  @relation("ProjectApplications")
+  createdBy          User?                   @relation("ProjectCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  externalReferences ExternalReference[]
+  files              File[]
+  hiredApplication   CandidateApplication?   @relation("ProjectHiredApplication", fields: [hiredApplicationId], references: [id], onDelete: SetNull)
+  interviews         Interview[]
+  members            ProjectMember[]
+  offerQueueItems    ProjectOfferQueueItem[]
+  offers             Offer[]
+  rejectionFollowUps RejectionFollowUp[]
+  stageComments      ProjectStageComment[]
+
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id          String            @id @default(cuid())
+  projectId   String            @map("project_id")
+  userId      String            @map("user_id")
+  projectRole ProjectMemberRole @map("project_role")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId, projectRole])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model Candidate {
+  id                 String          @id @default(cuid())
+  fullName           String          @map("full_name")
+  source             CandidateSource @default(linkedin)
+  linkedinProfileUrl String?         @map("linkedin_profile_url")
+  email              String?
+  phone              String?
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  lastSyncedAt       DateTime?       @map("last_synced_at")
+
+  applications       CandidateApplication[]
+  externalReferences ExternalReference[]
+  files              File[]
+
+  @@index([fullName])
+  @@map("candidates")
+}
+
+model CandidateApplication {
+  id               String          @id @default(cuid())
+  projectId        String          @map("project_id")
+  candidateId      String          @map("candidate_id")
+  stage            CandidateStage
+  status           CandidateStatus
+  importedAt       DateTime        @default(now()) @map("imported_at")
+  appliedAt        DateTime?       @map("applied_at")
+  appliedLabel     String?         @map("applied_label")
+  duplicateWarning Boolean         @default(false) @map("duplicate_warning")
+  closureReason    String?         @map("closure_reason")
+  closedAt         DateTime?       @map("closed_at")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  activityEvents     ActivityEvent[]
+  candidate          Candidate              @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  contactAttempts    ContactAttempt[]
+  externalReferences ExternalReference[]
+  files              File[]
+  hiredByProject     Project?               @relation("ProjectHiredApplication")
+  interviews         Interview[]
+  notes              CandidateNote[]
+  offerQueueItem     ProjectOfferQueueItem?
+  offers             Offer[]
+  project            Project                @relation("ProjectApplications", fields: [projectId], references: [id], onDelete: Cascade)
+  rejectionFollowUp  RejectionFollowUp?
+
+  @@unique([projectId, candidateId])
+  @@index([projectId, stage])
+  @@index([projectId, status])
+  @@index([candidateId])
+  @@map("candidate_applications")
+}
+
+model File {
+  id                     String   @id @default(cuid())
+  candidateId            String?  @map("candidate_id")
+  candidateApplicationId String?  @map("candidate_application_id")
+  projectId              String?  @map("project_id")
+  kind                   FileKind
+  fileName               String   @map("file_name")
+  mimeType               String   @map("mime_type")
+  sizeBytes              Int      @map("size_bytes")
+  content                Bytes?
+  createdByUserId        String?  @map("created_by_user_id")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  candidate            Candidate?            @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateApplication CandidateApplication? @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  createdBy            User?                 @relation("FileCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  project              Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([candidateApplicationId])
+  @@index([projectId])
+  @@map("files")
+}
+
+model ProjectStageComment {
+  id           String            @id @default(cuid())
+  projectId    String            @map("project_id")
+  stage        CandidateStage
+  authorUserId String            @map("author_user_id")
+  authorRole   ProjectMemberRole @map("author_role")
+  body         String
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  author  User    @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, stage])
+  @@map("project_stage_comments")
+}
+
+model CandidateNote {
+  id                     String            @id @default(cuid())
+  candidateApplicationId String            @map("candidate_application_id")
+  authorUserId           String            @map("author_user_id")
+  authorRole             ProjectMemberRole @map("author_role")
+  visibility             NoteVisibility    @default(all)
+  body                   String?
+  fields                 Json?
+  createdAt              DateTime          @default(now()) @map("created_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
+
+  application CandidateApplication @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  author      User                 @relation("CandidateNoteAuthor", fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateApplicationId, authorUserId])
+  @@index([candidateApplicationId, createdAt])
+  @@index([authorUserId])
+  @@map("candidate_notes")
+}
+
+model ContactAttempt {
+  id                     String         @id @default(cuid())
+  candidateApplicationId String         @map("candidate_application_id")
+  rejectionFollowUpId    String?        @map("rejection_follow_up_id")
+  context                ContactContext
+  result                 ContactResult
+  attemptedAt            DateTime       @map("attempted_at")
+  notes                  String?
+  createdByUserId        String?        @map("created_by_user_id")
+  createdAt              DateTime       @default(now()) @map("created_at")
+
+  application       CandidateApplication @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  createdBy         User?                @relation("ContactAttemptCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  rejectionFollowUp RejectionFollowUp?   @relation(fields: [rejectionFollowUpId], references: [id], onDelete: SetNull)
+
+  @@index([candidateApplicationId, context, attemptedAt])
+  @@index([rejectionFollowUpId])
+  @@map("contact_attempts")
+}
+
+model Interview {
+  id                     String          @id @default(cuid())
+  candidateApplicationId String          @map("candidate_application_id")
+  projectId              String          @map("project_id")
+  type                   InterviewType
+  status                 InterviewStatus @default(scheduled)
+  scheduledStartAt       DateTime        @map("scheduled_start_at")
+  scheduledEndAt         DateTime?       @map("scheduled_end_at")
+  timezone               String
+  meetingUrl             String?         @map("meeting_url")
+  createdByUserId        String?         @map("created_by_user_id")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  application CandidateApplication @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  createdBy   User?                @relation("InterviewCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([candidateApplicationId, type])
+  @@index([projectId, scheduledStartAt])
+  @@map("interviews")
+}
+
+model ActivityEvent {
+  id                     String   @id @default(cuid())
+  candidateApplicationId String?  @map("candidate_application_id")
+  projectId              String   @map("project_id")
+  eventType              String   @map("event_type")
+  title                  String
+  subtitle               String?
+  actorUserId            String?  @map("actor_user_id")
+  actorRole              Role?    @map("actor_role")
+  sourceType             String?  @map("source_type")
+  sourceId               String?  @map("source_id")
+  metadata               Json?    @map("metadata_json")
+  occurredAt             DateTime @default(now()) @map("occurred_at")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  actor       User?                 @relation("ActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  application CandidateApplication? @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  project     Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([candidateApplicationId, occurredAt])
+  @@index([projectId, occurredAt])
+  @@map("activity_events")
+}
+
+model RejectionFollowUp {
+  id                     String                  @id @default(cuid())
+  candidateApplicationId String                  @unique @map("candidate_application_id")
+  projectId              String                  @map("project_id")
+  status                 RejectionFollowUpStatus @default(waiting_for_contact)
+  reason                 RejectionFollowUpReason
+  eligibleAt             DateTime                @map("eligible_at")
+  handledAt              DateTime?               @map("handled_at")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+
+  application     CandidateApplication @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  contactAttempts ContactAttempt[]
+  project         Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status, eligibleAt])
+  @@map("rejection_follow_ups")
+}
+
+model ProjectOfferQueueItem {
+  id                     String               @id @default(cuid())
+  projectId              String               @map("project_id")
+  candidateApplicationId String               @unique @map("candidate_application_id")
+  rank                   Int
+  status                 OfferQueueItemStatus @default(waiting)
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  application CandidateApplication @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  offers      Offer[]
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, rank])
+  @@index([projectId, status])
+  @@map("project_offer_queue_items")
+}
+
+model Offer {
+  id                     String      @id @default(cuid())
+  projectId              String      @map("project_id")
+  candidateApplicationId String      @map("candidate_application_id")
+  offerQueueItemId       String?     @map("offer_queue_item_id")
+  status                 OfferStatus
+  finalCheckSentAt       DateTime?   @map("final_check_sent_at")
+  offerSentAt            DateTime?   @map("offer_sent_at")
+  respondedAt            DateTime?   @map("responded_at")
+  notes                  String?
+  createdByUserId        String?     @map("created_by_user_id")
+  createdAt              DateTime    @default(now()) @map("created_at")
+  updatedAt              DateTime    @updatedAt @map("updated_at")
+
+  application    CandidateApplication   @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  createdBy      User?                  @relation("OfferCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  offerQueueItem ProjectOfferQueueItem? @relation(fields: [offerQueueItemId], references: [id], onDelete: SetNull)
+  project        Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
+  @@index([candidateApplicationId])
+  @@map("offers")
+}
+
+model ExternalReference {
+  id                     String               @id @default(cuid())
+  projectId              String?              @map("project_id")
+  candidateId            String?              @map("candidate_id")
+  candidateApplicationId String?              @map("candidate_application_id")
+  resourceType           ExternalResourceType @map("resource_type")
+  provider               String
+  externalId             String               @map("external_id")
+  externalUrl            String?              @map("external_url")
+  metadata               Json?                @map("metadata_json")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  candidate            Candidate?            @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateApplication CandidateApplication? @relation(fields: [candidateApplicationId], references: [id], onDelete: Cascade)
+  project              Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, resourceType, externalId])
+  @@index([projectId])
+  @@index([candidateId])
+  @@index([candidateApplicationId])
+  @@map("external_references")
+}
+
+enum Role {
+  admin
+  human_resource
+  hiring_manager
+}
+
+enum ProjectMemberRole {
+  human_resource
+  hiring_manager
+}
+
+enum ProjectStatus {
+  active
+  archived
+  closed
+}
+
+enum CandidateSource {
+  linkedin
+  referral
+  manual
+}
+
+enum CandidateStage {
+  pre_interview
+  department_interview
+  hr_interview
+  manager_review
+  offer_stage
+}
+
+enum CandidateStatus {
+  waiting_for_contact
+  scheduled
+  not_reached
+  withdrawn
+  rejected
+  assessment_sent
+  waitlisted
+  approved_for_offer
+  final_check_sent
+  offer_sent
+  offer_rejected
+  offer_accepted
+  proceeded_with_another_candidate
+}
+
+enum FileKind {
+  resume
+  portfolio
+  attachment
+}
+
+enum NoteVisibility {
+  all
+  human_resource_only
+}
+
+enum ContactContext {
+  pre_interview
+  department_interview
+  hr_interview
+  rejection_follow_up
+}
+
+enum ContactResult {
+  not_reached
+  scheduled
+  withdrawn
+  contact_successful
+  pre_interview_not_conducted
+  rejection_handled
+}
+
+enum InterviewType {
+  department_interview
+  hr_interview
+}
+
+enum InterviewStatus {
+  scheduled
+  rescheduled
+  cancelled
+  completed
+}
+
+enum RejectionFollowUpStatus {
+  waiting_for_contact
+  not_reached
+  handled
+}
+
+enum RejectionFollowUpReason {
+  rejected
+  proceeded_with_another_candidate
+}
+
+enum OfferQueueItemStatus {
+  waiting
+  active
+  completed
+  skipped
+  accepted
+  rejected
+}
+
+enum OfferStatus {
+  final_check_sent
+  offer_sent
+  offer_accepted
+  offer_rejected
+  cancelled
+}
+
+enum ExternalResourceType {
+  project
+  candidate
+  candidate_application
+}

@@ -1,0 +1,598 @@
+CANDIDATE TRACKER WEB COMPONENT REFACTOR PLAN
+
+Status: planning only
+Scope: web/src React components and CSS ownership
+Out of scope: API behavior, routes, domain rules, backend changes, and adopting a third-party UI/CSS library
+
+GOALS
+
+1. Preserve current behavior and visual design.
+2. Remove exact duplication before introducing new abstractions.
+3. Keep route pages focused on loading data and composing the screen.
+4. Keep feature-specific components with their page feature.
+5. Put only genuinely reusable UI in a shared components directory.
+6. Split the 2,187-line App.css by ownership without changing selector behavior.
+7. Avoid speculative abstractions, barrel files, and generic components with excessive props.
+
+CURRENT COMPONENT INVENTORY
+
+There are 30 component function declarations representing 29 concepts. ModalFrame is independently declared twice.
+
+A. Application shell: web/src/app/App.tsx
+
+1. App
+   Current responsibility:
+   - Loads the current session.
+   - Renders loading and authentication errors.
+   - Renders the sidebar and top bar.
+   - Owns all route declarations.
+   - Applies role-based navigation visibility.
+   Decision: keep, but reduce to session bootstrap and app composition.
+   Target: web/src/app/App.tsx
+
+2. DevAccountSwitcher
+   Current responsibility:
+   - Loads users.
+   - Stores the selected development user.
+   - Refreshes the current session after switching.
+   Decision: keep as an app-specific component and move to its own file.
+   Reason: independent behavior, but not reusable product UI.
+   Target: web/src/app/components/DevAccountSwitcher.tsx
+
+3. Breadcrumbs
+   Current responsibility:
+   - Derives breadcrumb content from the pathname.
+   - Loads project and candidate names for dynamic paths.
+   Decision: keep as an app-shell component and move to its own file.
+   Reason: independent data and rendering responsibility.
+   Target: web/src/app/components/Breadcrumbs.tsx
+
+Suggested additional app composition:
+
+4. AppRoutes (new extraction, not a new behavior)
+   Responsibility:
+   - Contains only Routes and Route declarations.
+   Reason: route configuration should be readable without sidebar/session details.
+   Target: web/src/app/AppRoutes.tsx
+
+Do not extract the small sidebar and top-bar markup until they gain independent behavior or multiple variants.
+
+B. Projects page: web/src/pages/projects/ProjectsPage.tsx
+
+1. ProjectsPage
+   Current responsibility:
+   - Loads and filters projects.
+   - Chooses active or archived view.
+   - Controls create/edit modal rendering.
+   Decision: keep as the route-level orchestrator.
+   Target: web/src/pages/projects/ProjectsPage.tsx
+
+2. ProjectCard
+   Current responsibility:
+   - Displays one project, its status, candidate count, owner avatar, and actions.
+   Decision: keep as a feature component and move to its own file.
+   Reason: meaningful visual unit; no reason to make it globally generic.
+   Target: web/src/pages/projects/components/ProjectCard.tsx
+
+3. ProjectFormModal
+   Current responsibility:
+   - Loads assignable users.
+   - Owns project form state and validation.
+   - Creates, updates, and archives projects.
+   - Renders basic information, team assignment, and LinkedIn settings.
+   Decision: keep as one feature component initially and move to its own file.
+   Reason: the sections share one form state; splitting them immediately would create a large prop surface without reuse.
+   Target: web/src/pages/projects/components/ProjectFormModal.tsx
+   Later option: extract form sections only if the form grows or the sections are reused.
+
+4. StatusBadge
+   Current responsibility:
+   - Renders the shared status-badge class and a tone modifier.
+   Decision: collapse with all manually rendered status-badge markup into one shared StatusBadge.
+   Reason: project, pipeline, and candidate detail all use the same badge styling contract.
+   Target: web/src/components/ui/StatusBadge.tsx
+
+Repeated markup to extract from ProjectsPage:
+
+5. Search field
+   Decision: use shared SearchField.
+   Target: web/src/components/ui/SearchField.tsx
+
+6. Loading, error, and empty markup
+   Decision: use shared feedback components where their markup matches.
+   Targets:
+   - web/src/components/feedback/LoadingState.tsx
+   - web/src/components/feedback/ErrorMessage.tsx
+   - web/src/components/feedback/EmptyState.tsx
+
+C. Project pipeline page: web/src/pages/project-pipeline/ProjectPipelinePage.tsx
+
+1. ProjectPipelinePage
+   Current responsibility:
+   - Reads project and stage route parameters.
+   - Loads project and candidate data.
+   - Calculates stage counts and current role.
+   - Composes title, search, stage tabs, table, and comment modal.
+   Decision: keep as the route-level orchestrator.
+   Target: web/src/pages/project-pipeline/ProjectPipelinePage.tsx
+
+2. StatusCell
+   Current responsibility:
+   - Applies stage-specific candidate-status presentation rules.
+   Decision: do not merge with shared StatusBadge.
+   Reason: it uses a dot presentation and special stage rules rather than generic badge semantics.
+   Placement: keep private inside PipelineTable.tsx.
+
+3. ContactCell
+   Current responsibility:
+   - Links to the candidate contact modal.
+   Decision: keep private inside PipelineTable.tsx.
+   Reason: table-only implementation detail.
+
+4. InterviewCell
+   Current responsibility:
+   - Displays interview date/time, missing state, or terminated state.
+   Decision: keep private inside PipelineTable.tsx.
+   Reason: table-only implementation detail.
+
+5. PipelineTable (new grouping)
+   Responsibility:
+   - Owns table header, candidate rows, footer, and the three cell components.
+   - Receives already prepared candidates, columns, role, stage, and route identifiers.
+   Reason: the table is a cohesive visual unit and currently dominates the route page.
+   Target: web/src/pages/project-pipeline/components/PipelineTable.tsx
+
+6. BasicCommentModal
+   Current responsibility:
+   - Edits one stage comment and handles save state/error handling.
+   Decision: keep as a feature component and move to its own file.
+   Reason: domain-specific form behavior; only its modal shell is shared.
+   Target: web/src/pages/project-pipeline/components/BasicCommentModal.tsx
+
+7. ModalFrame (pipeline declaration)
+   Decision: collapse with the candidate-detail ModalFrame into shared RouteModal.
+   Target: web/src/components/ui/RouteModal.tsx
+
+8. Avatar
+   Decision: collapse with manually rendered project avatars into shared Avatar.
+   Target: web/src/components/ui/Avatar.tsx
+
+Repeated markup to extract:
+
+9. Candidate search field
+   Decision: use shared SearchField with a className or size modifier where necessary.
+
+10. Loading, error, and empty states
+    Decision: use shared feedback components while retaining table-specific modifier classes.
+
+D. Candidate detail page: web/src/pages/candidate-detail/CandidateDetailPage.tsx
+
+1. CandidateDetailPage
+   Current responsibility:
+   - Reads route and modal parameters.
+   - Loads candidate, project, and project candidates.
+   - Composes candidate content, quick actions, and route-driven modals.
+   Decision: keep as the route-level orchestrator.
+   Target: web/src/pages/candidate-detail/CandidateDetailPage.tsx
+
+2. CandidateHeader (new extraction)
+   Current source: title/status/profile-action markup currently inline in CandidateDetailPage.
+   Responsibility:
+   - Candidate name and status badge.
+   - LinkedIn and resume actions.
+   Decision: extract as a feature component.
+   Target: web/src/pages/candidate-detail/components/CandidateHeader.tsx
+
+3. PreInterviewCommentsSection
+   Current responsibility:
+   - Groups comments by role and renders two comment columns.
+   Decision: keep as a feature component and move to its own file.
+   Target: web/src/pages/candidate-detail/components/PreInterviewCommentsSection.tsx
+
+4. CommentColumn
+   Current responsibility:
+   - Renders one role's comment card.
+   Decision: collapse into the ownership boundary of PreInterviewCommentsSection.
+   Reason: used twice but only by that section; it should remain a private component in the same file, not become shared UI.
+
+5. InlineResume
+   Current responsibility:
+   - Displays the modeled resume placeholder.
+   Decision: keep as a feature component.
+   Target: web/src/pages/candidate-detail/components/InlineResume.tsx
+
+6. ScheduledInterviewCard
+   Current responsibility:
+   - Displays interview metadata and copy-meeting action.
+   Decision: keep as a feature component.
+   Target: web/src/pages/candidate-detail/components/ScheduledInterviewCard.tsx
+
+7. InternalNotes
+   Current responsibility:
+   - Applies note visibility rules.
+   - Groups notes by role.
+   - Manages expanded/collapsed notes.
+   - Renders structured and free-text notes.
+   Decision: keep as a feature component.
+   Target: web/src/pages/candidate-detail/components/InternalNotes.tsx
+   Note: a private NoteCard may be introduced in this same file if it improves readability; it should not be globally shared.
+
+8. QuickActions
+   Current responsibility:
+   - Owns note editing, candidate transitions, offer handling, and action-menu state.
+   Decision: keep as a candidate-detail feature component and move to its own file.
+   Target: web/src/pages/candidate-detail/components/QuickActions.tsx
+   Caution: it contains significant business/UI rules. This move should be mechanical before any behavioral redesign.
+
+9. HrInterviewNoteForm
+   Current responsibility:
+   - Renders the HR rating rubric and text fields.
+   Decision: keep with QuickActions as a private or colocated component initially.
+   Reason: only QuickActions uses it and it shares note-form state.
+   Target options:
+   - Private component inside QuickActions.tsx initially.
+   - web/src/pages/candidate-detail/components/HrInterviewNoteForm.tsx if QuickActions remains too large.
+
+10. ActivityHistory
+    Current responsibility:
+    - Reverses and renders candidate activity with derived actor/subtext labels.
+    Decision: keep as a feature component.
+    Target: web/src/pages/candidate-detail/components/ActivityHistory.tsx
+
+11. ContactCardModal
+    Current responsibility:
+    - Displays email and phone details and copy actions.
+    Decision: keep as a feature modal using shared RouteModal.
+    Target: web/src/pages/candidate-detail/modals/ContactCardModal.tsx
+
+12. ContactInfoRow
+    Current responsibility:
+    - Renders one contact field.
+    Decision: collapse into ContactCardModal's ownership boundary.
+    Reason: only meaningful within that modal; keep it private in the same file.
+
+13. LogContactAttemptModal
+    Current responsibility:
+    - Captures contact outcome, timestamp, interview data, meeting URL, and notes.
+    - Executes the corresponding transition.
+    Decision: keep as a feature modal using shared RouteModal.
+    Target: web/src/pages/candidate-detail/modals/LogContactAttemptModal.tsx
+
+14. InterimUpdateModal
+    Current responsibility:
+    - Displays the interim-update form shell.
+    Decision: keep as a feature modal using shared RouteModal.
+    Target: web/src/pages/candidate-detail/modals/InterimUpdateModal.tsx
+
+15. ConfirmationModal
+    Current responsibility:
+    - Displays generic title/body/cancel/confirm UI.
+    Decision: move to shared UI and have it use RouteModal.
+    Reason: no candidate-specific behavior; useful for project archive and future destructive actions.
+    Target: web/src/components/ui/ConfirmationModal.tsx
+
+16. ModalFrame (candidate-detail declaration)
+    Decision: collapse with the pipeline declaration into RouteModal.
+    Target: web/src/components/ui/RouteModal.tsx
+
+Repeated markup to extract:
+
+17. Candidate status badge
+    Decision: use shared StatusBadge.
+
+18. Initial loading/error state
+    Decision: use shared LoadingState and ErrorMessage inside the existing surface layout.
+
+E. Rejection follow-up page: web/src/pages/rejection-follow-up/RejectionFollowUpPage.tsx
+
+1. RejectionFollowUpPage
+   Current responsibility:
+   - Renders the current placeholder screen.
+   Decision: keep unchanged.
+   Target: existing file.
+   Reason: no component pressure or duplication yet.
+
+COLLAPSE AND CONSOLIDATION MATRIX
+
+1. Pipeline ModalFrame + Candidate ModalFrame
+   Collapse into: RouteModal
+   Why: exact duplicated shell, same URL-driven close behavior, same backdrop/surface classes.
+   Required options: closeTo, children, className, showCloseButton.
+   Placement: web/src/components/ui/RouteModal.tsx
+
+2. Project StatusBadge + inline pipeline badge + inline candidate badge
+   Collapse into: StatusBadge
+   Why: same class naming and visual contract.
+   Placement: web/src/components/ui/StatusBadge.tsx
+
+3. Pipeline Avatar + project-card manual initial markup
+   Collapse into: Avatar
+   Why: same initials/fallback concept and shared CSS class.
+   Placement: web/src/components/ui/Avatar.tsx
+
+4. Projects search + pipeline search
+   Collapse into: SearchField
+   Why: same icon/input/control behavior; variants should be CSS modifiers, not separate implementations.
+   Placement: web/src/components/ui/SearchField.tsx
+
+5. Repeated loading markup
+   Collapse into: LoadingState
+   Why: repeated spinner, label, and accessibility requirement.
+   Placement: web/src/components/feedback/LoadingState.tsx
+
+6. Repeated request-error markup
+   Collapse into: ErrorMessage
+   Why: repeated conditional rendering and class contract.
+   Placement: web/src/components/feedback/ErrorMessage.tsx
+
+7. Repeated empty-row markup
+   Collapse into: EmptyState
+   Why: repeated semantic empty-result state with optional modifier classes.
+   Placement: web/src/components/feedback/EmptyState.tsx
+
+8. Pipeline StatusCell + ContactCell + InterviewCell
+   Group under: PipelineTable
+   Why: these are not globally reusable; they are private parts of one cohesive table.
+   Placement: web/src/pages/project-pipeline/components/PipelineTable.tsx
+
+9. CommentColumn
+   Group under: PreInterviewCommentsSection
+   Why: private two-column rendering detail.
+   Placement: same file as PreInterviewCommentsSection.
+
+10. ContactInfoRow
+    Group under: ContactCardModal
+    Why: private contact-card rendering detail.
+    Placement: same file as ContactCardModal.
+
+11. HrInterviewNoteForm
+    Group under: QuickActions initially
+    Why: private note-editor implementation with shared local state.
+    Placement: same file initially; separate feature file only if size remains excessive.
+
+12. Candidate-detail confirmation + project archive confirmation
+    Potential collapse into: ConfirmationModal
+    Why: both represent cancel/confirm destructive decisions.
+    Caution: project archive currently uses an inline anchored popover rather than the route modal. Do not force them together until the desired interaction is confirmed.
+
+COMPONENTS THAT SHOULD NOT BE COLLAPSED
+
+1. StatusCell should not become StatusBadge. It has table-specific dot styling and stage-specific labels.
+2. BasicCommentModal should not merge with InterimUpdateModal. Their data ownership and save behavior differ.
+3. ProjectFormModal should not merge with LogContactAttemptModal. They only share a modal shell.
+4. ProjectCard should not become a generic Card. Its status, routing, candidate count, and edit rules are domain-specific.
+5. InternalNotes and ActivityHistory should remain separate. They have different data rules and interaction patterns.
+6. QuickActions should not be turned into a generic menu. It contains candidate workflow rules.
+7. Page-specific form sections should not be extracted merely because they use section/label markup.
+8. Link and button elements should not immediately be forced into one polymorphic Button component. Preserve correct HTML semantics first.
+
+TARGET CODEBASE PLACEMENT
+
+web/src/
+  app/
+    App.tsx
+    AppRoutes.tsx
+    App.css
+    components/
+      Breadcrumbs.tsx
+      DevAccountSwitcher.tsx
+
+  components/
+    feedback/
+      EmptyState.tsx
+      ErrorMessage.tsx
+      LoadingState.tsx
+    ui/
+      Avatar.tsx
+      ConfirmationModal.tsx
+      RouteModal.tsx
+      SearchField.tsx
+      StatusBadge.tsx
+
+  pages/
+    projects/
+      ProjectsPage.tsx
+      ProjectsPage.css
+      components/
+        ProjectCard.tsx
+        ProjectFormModal.tsx
+
+    project-pipeline/
+      ProjectPipelinePage.tsx
+      ProjectPipelinePage.css
+      components/
+        BasicCommentModal.tsx
+        PipelineTable.tsx
+
+    candidate-detail/
+      CandidateDetailPage.tsx
+      CandidateDetailPage.css
+      components/
+        ActivityHistory.tsx
+        CandidateHeader.tsx
+        InlineResume.tsx
+        InternalNotes.tsx
+        PreInterviewCommentsSection.tsx
+        QuickActions.tsx
+        ScheduledInterviewCard.tsx
+      modals/
+        ContactCardModal.tsx
+        InterimUpdateModal.tsx
+        LogContactAttemptModal.tsx
+
+    rejection-follow-up/
+      RejectionFollowUpPage.tsx
+
+  styles/
+    controls.css
+    tokens.css
+
+  data/
+    api.ts
+
+  domain/
+    labels.ts
+    types.ts
+
+  index.css
+  main.tsx
+
+CSS PLAN
+
+Current state:
+- index.css: 31 lines of global document styling.
+- App.css: 2,187 lines containing app shell, projects, pipeline, candidate detail, modals, controls, and responsive rules.
+- Repeated values include white backgrounds, 12/14px font sizes, 4/6/8px radii, 8/10/12/16px gaps, and several repeated text/border colors.
+- Existing class naming already uses useful base/modifier patterns such as status-badge--success and project-card--new.
+
+Target ownership:
+
+1. web/src/index.css
+   - Browser reset and body/root defaults only.
+   - Import tokens and shared controls before application/page CSS.
+
+2. web/src/styles/tokens.css
+   - Repeated colors, spacing, font sizes, radii, and shadows.
+   - Start only with values that have repeated semantic meaning.
+
+3. web/src/styles/controls.css
+   - Existing shared button/link control classes such as primary-button, secondary-button, danger-button, outline-button, and dark-button.
+   - Keep native button and Link semantics; share appearance through CSS.
+
+4. web/src/app/App.css
+   - App shell, sidebar, top bar, breadcrumbs, account controls, and main layout only.
+
+5. ProjectsPage.css
+   - Project grid/cards and project form styling.
+
+6. ProjectPipelinePage.css
+   - Pipeline title, stage tabs, table, stage comments, and table-cell presentation.
+
+7. CandidateDetailPage.css
+   - Candidate layout, notes, activity, quick actions, contact forms, and candidate-specific modal content.
+
+8. Shared component CSS
+   - RouteModal, StatusBadge, Avatar, SearchField, and feedback styles may be colocated as same-name CSS files under their component folders.
+
+CSS library decision:
+- Do not add a full CSS framework or component library during this refactor.
+- The current UI is custom and already substantially implemented.
+- First establish internal reusable primitives and CSS ownership.
+- Reassess an unstyled accessibility library later, especially for dialogs and menus.
+
+NAMING AND EXPORT RULES
+
+1. React component files use PascalCase.tsx.
+2. Page directories remain kebab-case.
+3. Route components end in Page.
+4. Route-driven modal shell is named RouteModal to describe its URL-based close behavior.
+5. Shared components expose one clear component; avoid index.ts barrel files.
+6. Small components used only by one owner remain private in that owner's file.
+7. Feature-specific components are not placed in the global components directory.
+8. Generic names such as Card, Panel, Wrapper, or Container are avoided unless the abstraction has a stable semantic contract.
+
+IMPLEMENTATION PHASES
+
+Phase 1: Baseline and exact deduplication
+- Record current route behavior and key screen states.
+- Add RouteModal, StatusBadge, and Avatar.
+- Replace duplicate implementations without changing layout or business logic.
+- Build and lint.
+
+Phase 2: Mechanical page decomposition
+- Move existing local components into the target feature files.
+- Keep props and behavior unchanged.
+- Introduce PipelineTable and CandidateHeader as cohesive extractions.
+- Move private helpers only with their owning components.
+- Build and lint after each page.
+
+Phase 3: Repeated feedback and search UI
+- Add SearchField, LoadingState, ErrorMessage, and EmptyState.
+- Preserve page-specific modifier classes through className props.
+- Verify labels and accessibility semantics.
+
+Phase 4: CSS ownership split
+- Move selectors from App.css into app, shared, and page stylesheets.
+- Preserve CSS import order and specificity.
+- Introduce a small token set for proven repeated values.
+- Remove only selectors proven unused after visual checks.
+
+Phase 5: App composition
+- Move Breadcrumbs and DevAccountSwitcher.
+- Extract AppRoutes.
+- Keep App responsible for session bootstrap and shell composition.
+
+Phase 6: Verification
+- npm run lint
+- npm run build
+- Smoke-test every route and route-driven modal.
+- Compare desktop and responsive layouts.
+- Check loading, error, empty, disabled, and role-specific states.
+- Check modal keyboard behavior and focus before claiming accessibility improvements.
+
+RISKS AND CONTROLS
+
+1. CSS order/specificity regressions
+   Control: move selectors mechanically before changing values; preserve import order.
+
+2. Behavioral changes while moving QuickActions
+   Control: move code first, redesign later; keep transition helpers and props unchanged.
+
+3. Over-generalized shared components
+   Control: only share exact repeated semantics; keep domain components feature-local.
+
+4. Circular imports
+   Control: shared components import no page code; pages may import shared components.
+
+5. Router modal regressions
+   Control: RouteModal retains closeTo and Link-based close behavior during initial extraction.
+
+6. False reuse through generic Button/Card components
+   Control: retain CSS classes and native elements until behavior, not only appearance, is demonstrably repeated.
+
+PAGE-BY-PAGE RESULT SUMMARY
+
+App currently:
+- App, DevAccountSwitcher, Breadcrumbs.
+Target:
+- App plus AppRoutes; DevAccountSwitcher and Breadcrumbs moved to app/components.
+Shared collapses used:
+- LoadingState and ErrorMessage for session states where layout permits.
+
+Projects currently:
+- ProjectsPage, ProjectCard, ProjectFormModal, StatusBadge.
+Target:
+- ProjectsPage orchestrates; ProjectCard and ProjectFormModal move to feature components.
+- StatusBadge collapses into shared StatusBadge.
+- Repeated search/loading/error/empty markup uses shared components.
+
+Project pipeline currently:
+- ProjectPipelinePage, StatusCell, ContactCell, InterviewCell, BasicCommentModal, ModalFrame, Avatar.
+Target:
+- ProjectPipelinePage orchestrates.
+- StatusCell, ContactCell, and InterviewCell are grouped privately in PipelineTable.
+- BasicCommentModal becomes a feature component.
+- ModalFrame collapses into shared RouteModal.
+- Avatar collapses into shared Avatar.
+- Search and feedback use shared components.
+
+Candidate detail currently:
+- CandidateDetailPage, PreInterviewCommentsSection, CommentColumn, InlineResume, ScheduledInterviewCard, InternalNotes, QuickActions, HrInterviewNoteForm, ActivityHistory, ContactCardModal, ContactInfoRow, LogContactAttemptModal, InterimUpdateModal, ConfirmationModal, ModalFrame.
+Target:
+- CandidateDetailPage orchestrates.
+- Header, content sections, notes, activity, and quick actions become feature component files.
+- CommentColumn stays private to PreInterviewCommentsSection.
+- HrInterviewNoteForm stays with QuickActions initially.
+- ContactInfoRow stays private to ContactCardModal.
+- Candidate modals move under candidate-detail/modals.
+- ConfirmationModal and RouteModal become shared UI.
+- Candidate status uses shared StatusBadge.
+
+Rejection follow-up currently:
+- RejectionFollowUpPage.
+Target:
+- No change until functionality grows.
+
+APPROVAL POINT
+
+No application component or CSS rewrite should begin until this inventory, consolidation matrix, target tree, and phased sequence are accepted or adjusted.

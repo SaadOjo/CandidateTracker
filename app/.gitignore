@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Temporary refactor work and local backups
+.refactor
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

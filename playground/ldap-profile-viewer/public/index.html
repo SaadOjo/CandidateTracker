@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>LDAP Profile Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Local experiment</p>
+          <h1>LDAP Profile Viewer</h1>
+          <p class="hero-copy">Authenticate against Active Directory and display your directory profile in a readable format.</p>
+        </div>
+        <span class="local-badge">localhost only</span>
+      </header>
+
+      <section class="connection-card" aria-labelledby="connection-title">
+        <div>
+          <p class="section-kicker" id="connection-title">Directory connection</p>
+          <div class="connection-targets" id="connection-targets">Loading configuration…</div>
+        </div>
+        <span class="transport-badge" id="transport-badge">Checking transport</span>
+      </section>
+
+      <div class="transport-warning" id="transport-warning" hidden>
+        <strong>Unencrypted LDAP transport</strong>
+        <span>The directory connection uses LDAP on port 389 without StartTLS. Use it only on the trusted company network/VPN.</span>
+      </div>
+
+      <section class="signin-card" aria-labelledby="signin-title">
+        <div class="signin-heading">
+          <div>
+            <p class="section-kicker">Authentication</p>
+            <h2 id="signin-title">View my directory profile</h2>
+          </div>
+          <p>Your password is used only for this request and is not logged or stored by this application.</p>
+        </div>
+
+        <form id="ldap-form" autocomplete="off">
+          <label>
+            <span>Username</span>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="26063413 or TOKENINC\\26063413"
+              maxlength="254"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </label>
+          <label>
+            <span>Password</span>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Your Active Directory password"
+              maxlength="2048"
+              required
+            />
+          </label>
+          <button id="submit-button" type="submit">
+            <span class="button-label">Authenticate and load profile</span>
+            <span class="button-loading" hidden>Contacting directory…</span>
+          </button>
+        </form>
+
+        <p class="privacy-note">
+          The local server passes the password to <code>ldapsearch</code> through a temporary <code>0600</code> file and deletes it immediately after the request.
+        </p>
+      </section>
+
+      <section class="message" id="message" aria-live="polite" hidden></section>
+      <section class="results" id="results" aria-live="polite" hidden></section>
+    </main>
+  </body>
+</html>

@@ -1,34 +1,36 @@
 {
-  "name": "app",
+  "name": "candidate-tracker",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "dev:server": "npm --prefix server run dev",
-    "build": "tsc -b && vite build",
-    "build:server": "npm --prefix server run build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+  "engines": {
+    "node": ">=24.19 <25"
   },
-  "dependencies": {
-    "lucide-react": "^1.17.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.1"
+  "workspaces": [
+    "web",
+    "api"
+  ],
+  "scripts": {
+    "dev": "npm run dev:web",
+    "dev:web": "npm run dev --workspace @candidate-tracker/web",
+    "dev:api": "npm run dev --workspace @candidate-tracker/api",
+    "build": "npm run build:web && npm run build:api",
+    "build:web": "npm run build --workspace @candidate-tracker/web",
+    "build:api": "npm run build --workspace @candidate-tracker/api",
+    "lint": "eslint .",
+    "prisma:generate": "npm run prisma:generate --workspace @candidate-tracker/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace @candidate-tracker/api --",
+    "db:start": "npm exec --workspace @candidate-tracker/api -- tsx ../local-db/start.ts",
+    "db:seed": "npm exec --workspace @candidate-tracker/api -- tsx ../local-db/seed.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^24.12.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@types/node": "^24.13.3",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.59.2"
   }
 }
