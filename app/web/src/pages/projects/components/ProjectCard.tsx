@@ -34,7 +34,7 @@ export function ProjectCard({ project, canManage }: ProjectCardProps) {
       </div>
       <div className="flex items-center justify-between gap-3.5">
         <span className="inline-flex items-center" aria-label={`${project.candidateCount} candidates`}>
-          <Avatar name={project.hiringManager || 'H'} />
+          <Avatar name={project.hiringManager} />
           <span className="-ml-[5px] inline-flex h-7 min-w-7 items-center rounded-lg bg-surface-info px-2 text-xs font-extrabold text-body">
             {project.candidateCount}
           </span>

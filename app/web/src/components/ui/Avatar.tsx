@@ -4,7 +4,8 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, size = 'small' }: AvatarProps) {
-  const initial = name.trim()[0]?.toUpperCase() ?? '?'
+  const initial = name.trim()[0]?.toUpperCase()
+  if (!initial) throw new Error('Avatar requires a non-empty name')
   const sizeClasses = size === 'large' ? 'h-9 w-9 text-[13px]' : 'h-[30px] w-[30px] text-xs'
 
   return (

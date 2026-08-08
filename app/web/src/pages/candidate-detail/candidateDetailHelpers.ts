@@ -5,7 +5,7 @@ import type {
   CandidateNoteInput,
   CandidateTransitionAction,
   NoteField,
-  Project,
+  UserRole,
 } from '../../domain/types'
 
 export const hrRubricItems = [
@@ -89,7 +89,9 @@ function buildHrRubricFields(formNote: Record<string, string>): NoteField[] {
 }
 
 function formatHrRubricRating(value: string) {
-  return hrRubricRatings.find((rating) => rating.value === value)?.label ?? value
+  const rating = hrRubricRatings.find((item) => item.value === value)
+  if (!rating) throw new Error(`Unsupported HR rubric rating: ${value}`)
+  return rating.label
 }
 
 export function noteFieldsToForm(note: CandidateNote) {
@@ -105,10 +107,18 @@ export function noteFieldsToForm(note: CandidateNote) {
 }
 
 function parseHrRubricRating(label: string) {
-  return hrRubricRatings.find((rating) => rating.label === label || rating.value === label)?.value ?? label
+  const rating = hrRubricRatings.find((item) => item.label === label || item.value === label)
+  if (!rating) throw new Error(`Unsupported saved HR rubric rating: ${label}`)
+  return rating.value
 }
 
 export function groupNotesByRole(notes: CandidateNote[]) {
+  notes.forEach((note) => {
+    if (note.authorRole !== 'human_resource' && note.authorRole !== 'hiring_manager') {
+      throw new Error(`Unsupported author role for candidate note ${note.id}: ${String(note.authorRole)}`)
+    }
+  })
+
   const groups = [
     {
       role: 'human_resource',
@@ -146,23 +156,33 @@ export type ContactLogResult = 'contact_successful' | 'scheduled' | 'not_reached
 
 export function getContactResultOptions(candidate: Candidate): ContactLogResult[] {
   if (candidate.stage === 'pre_interview') return ['contact_successful', 'not_reached', 'withdrawn']
-  return ['scheduled', 'not_reached', 'withdrawn']
+  if (candidate.stage === 'department_interview' || candidate.stage === 'hr_interview') {
+    return ['scheduled', 'not_reached', 'withdrawn']
+  }
+  throw new Error(`Contact attempts are not supported for candidate stage: ${candidate.stage}`)
 }
 
 export function getContactResultLabel(result: ContactLogResult) {
   if (result === 'contact_successful') return 'Contact Successful'
   if (result === 'scheduled') return 'Scheduled'
   if (result === 'not_reached') return 'Not Reached'
-  return 'Withdrawn'
+  if (result === 'withdrawn') return 'Withdrawn'
+  throw new Error(`Unsupported contact result: ${String(result)}`)
 }
 
 export function getContactTransitionAction(candidate: Candidate, result: ContactLogResult): CandidateTransitionAction {
   if (result === 'scheduled') {
-    return candidate.stage === 'hr_interview' ? 'schedule_hr_interview' : 'schedule_department_interview'
+    if (candidate.stage === 'department_interview') return 'schedule_department_interview'
+    if (candidate.stage === 'hr_interview') return 'schedule_hr_interview'
+    throw new Error(`Scheduled contact result is not supported for candidate stage: ${candidate.stage}`)
   }
   if (result === 'not_reached') return 'mark_not_reached'
   if (result === 'withdrawn') return 'withdraw'
-  return 'mark_contact_successful'
+  if (result === 'contact_successful') {
+    if (candidate.stage === 'pre_interview') return 'mark_contact_successful'
+    throw new Error(`Successful contact result is not supported for candidate stage: ${candidate.stage}`)
+  }
+  throw new Error(`Unsupported contact result: ${String(result)}`)
 }
 
 export function shouldShowProcess(candidate: Candidate, role: 'human_resource' | 'hiring_manager') {
@@ -173,17 +193,16 @@ export function shouldShowProcess(candidate: Candidate, role: 'human_resource' |
   return false
 }
 
-export function formatNoteAuthor(note: CandidateNote, project: Project | null) {
-  if (note.author?.name) return `${formatAuthorRole(note.authorRole)} · ${note.author.name}`
-  if (note.authorRole === 'hiring_manager') return `Hiring Manager · ${project?.hiringManager ?? '—'}`
-  if (note.authorRole === 'human_resource') return `Human Resource · ${project?.assignedHumanResources?.[0] ?? '—'}`
-  return 'Internal Note'
+export function formatNoteAuthor(note: CandidateNote) {
+  if (!note.author) throw new Error(`Candidate note ${note.id} has no author`)
+  if (!note.author.name.trim()) throw new Error(`Candidate note ${note.id} has an empty author name`)
+  return `${formatAuthorRole(note.authorRole)} · ${note.author.name}`
 }
 
 function formatAuthorRole(role: CandidateNote['authorRole']) {
   if (role === 'hiring_manager') return 'Hiring Manager'
   if (role === 'human_resource') return 'Human Resource'
-  return 'User'
+  throw new Error(`Unsupported candidate note author role: ${String(role)}`)
 }
 
 const redundantActivitySubtitles = new Set([
@@ -203,12 +222,10 @@ const redundantActivitySubtitles = new Set([
   'Offer sent to candidate.',
 ])
 
-export function getActivitySubtext(item: CandidateActivityEvent, project: Project | null) {
+export function getActivitySubtext(item: CandidateActivityEvent) {
+  const actor = getActivityActorLabel(item)
   const subtitle = item.subtitle?.trim()
   if (subtitle && !redundantActivitySubtitles.has(subtitle)) return subtitle
-
-  const actor = getActivityActorLabel(item, project)
-  if (!actor) return ''
 
   if (item.title.startsWith('Moved to')) return `Moved by ${actor}`
   if (item.title.includes('Scheduled')) return `Scheduled by ${actor}`
@@ -222,39 +239,39 @@ export function getActivitySubtext(item: CandidateActivityEvent, project: Projec
   return ''
 }
 
-function getActivityActorLabel(item: CandidateActivityEvent, project: Project | null) {
-  if (item.actor?.name) return `${formatUserRole(item.actor.role)} - ${item.actor.name}`
-  if (item.actorRole === 'hiring_manager') return `Hiring Manager - ${project?.hiringManager ?? '—'}`
-  if (item.actorRole === 'human_resource') return `Human Resource - ${project?.assignedHumanResources?.[0] ?? '—'}`
-  if (item.actorRole === 'admin') return 'Admin'
-  return ''
+function getActivityActorLabel(item: CandidateActivityEvent) {
+  if (!item.actor) throw new Error(`Candidate activity ${item.id} has no actor`)
+  if (!item.actor.name.trim()) throw new Error(`Candidate activity ${item.id} has an empty actor name`)
+  return `${formatUserRole(item.actor.role)} - ${item.actor.name}`
 }
 
-function formatUserRole(role: string) {
+function formatUserRole(role: UserRole) {
   if (role === 'hiring_manager') return 'Hiring Manager'
   if (role === 'human_resource') return 'Human Resource'
   if (role === 'admin') return 'Admin'
-  return role
+  throw new Error(`Unsupported user role: ${String(role)}`)
 }
 
 export function notifyCandidateChanged() {
   window.dispatchEvent(new Event('candidate-tracker:candidate-changed'))
 }
 
-export function formatSource(source: string) {
+export function formatSource(source: Candidate['source']) {
   if (source === 'linkedin') return 'LinkedIn'
-  return source.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+  if (source === 'referral') return 'Referral'
+  if (source === 'manual') return 'Manual'
+  throw new Error(`Unsupported candidate source: ${String(source)}`)
 }
 
 export function formatDateTime(value: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid candidate date and time: ${value}`)
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date)
 }
 
 export function formatTime(value: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid candidate time: ${value}`)
   return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(date)
 }
 

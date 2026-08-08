@@ -53,12 +53,12 @@ export function isPipelineStage(value: string | undefined): value is PipelineSta
 
 export function formatDate(value: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid pipeline date: ${value}`)
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).format(date)
 }
 
 export function formatTime(value: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid pipeline time: ${value}`)
   return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(date)
 }

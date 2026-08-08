@@ -1,11 +1,11 @@
 import { Archive, Plus } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { ErrorMessage } from '../../components/feedback/ErrorMessage'
 import { LoadingState } from '../../components/feedback/LoadingState'
 import { SearchField } from '../../components/ui/SearchField'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { listProjects } from '../../data/api'
+import { useProjects } from '../../app/queries/useProjects'
 import { projectStatusLabels } from '../../domain/labels'
 import type { AuthSession, Project } from '../../domain/types'
 import { ProjectCard } from './components/ProjectCard'
@@ -18,34 +18,29 @@ interface ProjectsPageProps {
 }
 
 const projectCardClasses = 'relative flex min-h-[236px] flex-col justify-between rounded-lg border p-6 text-inherit no-underline'
+const emptyProjects: Project[] = []
 
 export function ProjectsPage({ session, modal, view = 'default' }: ProjectsPageProps) {
   const { projectId } = useParams()
   const canManageProjects = session.appRole === 'admin' || session.appRole === 'human_resource'
-  const [projects, setProjects] = useState<Project[]>([])
   const [query, setQuery] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const refreshProjects = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      setProjects(await listProjects({ query }))
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Could not load projects')
-    } finally {
-      setLoading(false)
-    }
-  }, [query])
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const projectsQuery = useProjects(session.userId, { query: debouncedQuery })
+  const projects = projectsQuery.data ?? emptyProjects
+  const loading = projectsQuery.isPending
+  const error = projectsQuery.isError ? projectsQuery.error.message : null
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      void refreshProjects()
+      setDebouncedQuery(query)
     }, 160)
 
     return () => window.clearTimeout(timeout)
-  }, [refreshProjects])
+  }, [query])
+
+  async function refreshProjects() {
+    await projectsQuery.refetch()
+  }
 
   const activeProjects = useMemo(() => projects.filter((project) => project.status === 'active'), [projects])
   const archivedProjects = useMemo(() => projects.filter((project) => project.status === 'archived'), [projects])
@@ -53,6 +48,10 @@ export function ProjectsPage({ session, modal, view = 'default' }: ProjectsPageP
   const selectedProject = projects.find((project) => project.id === projectId)
 
   if (modal && !canManageProjects) return <Navigate to="/projects" replace />
+  if (modal === 'edit' && !projectId) throw new Error('Edit project route requires a projectId')
+  if (modal === 'edit' && !loading && !error && !selectedProject) {
+    throw new Error(`Edit project route references an unknown project: ${projectId}`)
+  }
 
   return (
     <>
@@ -132,12 +131,13 @@ export function ProjectsPage({ session, modal, view = 'default' }: ProjectsPageP
       </section>
 
       {modal === 'new' && (
-        <ProjectFormModal mode="create" closeTo="/projects" onSaved={refreshProjects} />
+        <ProjectFormModal mode="create" closeTo="/projects" currentUserId={session.userId} onSaved={refreshProjects} />
       )}
       {modal === 'edit' && selectedProject && (
         <ProjectFormModal
           mode="edit"
           closeTo="/projects"
+          currentUserId={session.userId}
           project={selectedProject}
           onSaved={refreshProjects}
         />

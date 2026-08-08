@@ -1,48 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useProjects } from '../../app/queries/useProjects'
+import { useRejectionFollowUps } from '../../app/queries/useRejectionFollowUps'
 import { ErrorMessage } from '../../components/feedback/ErrorMessage'
 import { LoadingState } from '../../components/feedback/LoadingState'
-import { listProjects, listRejectionFollowUps } from '../../data/api'
-import type { Project, RejectionFollowUp } from '../../domain/types'
+import type { AuthSession, RejectionFollowUp } from '../../domain/types'
 import { RejectionFilters } from './components/RejectionFilters'
 import { RejectionFollowUpTable } from './components/RejectionFollowUpTable'
 import { filterRejectionFollowUps } from './rejectionFollowUpHelpers'
 import type { RejectionStatusFilter } from './rejectionFollowUpHelpers'
 
-export function RejectionFollowUpPage() {
-  const [followUps, setFollowUps] = useState<RejectionFollowUp[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
+const emptyFollowUps: RejectionFollowUp[] = []
+
+export function RejectionFollowUpPage({ session }: { session: AuthSession }) {
+  const followUpsQuery = useRejectionFollowUps(session.userId)
+  const projectsQuery = useProjects(session.userId)
+  const followUps = followUpsQuery.data ?? emptyFollowUps
+  const projects = projectsQuery.data ?? []
   const [query, setQuery] = useState('')
   const [projectFilter, setProjectFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState<RejectionStatusFilter>('all')
   const [projectMenuOpen, setProjectMenuOpen] = useState(false)
   const [statusMenuOpen, setStatusMenuOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-
-    async function loadFollowUps() {
-      try {
-        const [followUpItems, projectItems] = await Promise.all([
-          listRejectionFollowUps(),
-          listProjects(),
-        ])
-        if (!active) return
-        setFollowUps(followUpItems)
-        setProjects(projectItems)
-      } catch (requestError) {
-        if (active) setError(requestError instanceof Error ? requestError.message : 'Could not load rejection follow-ups')
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    void loadFollowUps()
-    return () => {
-      active = false
-    }
-  }, [])
+  const loading = followUpsQuery.isPending || projectsQuery.isPending
+  const error = followUpsQuery.isError
+    ? followUpsQuery.error.message
+    : projectsQuery.isError ? projectsQuery.error.message : null
 
   const visibleFollowUps = useMemo(
     () => filterRejectionFollowUps(followUps, query, projectFilter, statusFilter),

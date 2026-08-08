@@ -1,7 +1,7 @@
-import type { Candidate, Project } from '../../../domain/types'
+import type { Candidate } from '../../../domain/types'
 import { formatDateTime, getActivitySubtext } from '../candidateDetailHelpers'
 
-export function ActivityHistory({ candidate, project }: { candidate: Candidate; project: Project | null }) {
+export function ActivityHistory({ candidate }: { candidate: Candidate }) {
   const visible = [...candidate.activity].reverse()
 
   return (
@@ -10,7 +10,7 @@ export function ActivityHistory({ candidate, project }: { candidate: Candidate; 
       {visible.length > 0 ? (
         <ol className="m-0 list-none overflow-hidden rounded-compact bg-white p-0">
           {visible.map((item, index) => {
-            const subtext = getActivitySubtext(item, project)
+            const subtext = getActivitySubtext(item)
             return (
               <li className="grid min-h-[73px] grid-cols-[33px_1fr_160px] items-center border-b border-divider px-4 py-2.5 last:border-b-0" key={item.id}>
                 <span className="text-[13px] font-extrabold text-faint">{visible.length - index}</span>
@@ -18,7 +18,7 @@ export function ActivityHistory({ candidate, project }: { candidate: Candidate; 
                   <strong className="block text-sm leading-[19px] text-body">{item.title}</strong>
                   {subtext && <small className="mt-1 block text-[11px] text-body">{subtext}</small>}
                 </div>
-                <time className="text-right text-xs text-muted">{formatDateTime(item.occurredAt ?? item.createdAt ?? '')}</time>
+                <time className="text-right text-xs text-muted">{formatDateTime(item.occurredAt)}</time>
               </li>
             )
           })}

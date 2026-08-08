@@ -15,21 +15,24 @@ import type {
   UserRole,
 } from '../domain/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
-const DEV_AUTH_USER_ID = import.meta.env.VITE_DEV_AUTH_USER_ID
+const API_BASE_URL = import.meta.env.VITE_API_URL
 const DEV_AUTH_STORAGE_KEY = 'candidate-tracker:dev-user-id'
+
+if (!API_BASE_URL) throw new Error('VITE_API_URL is required')
 
 export async function getCurrentSession() {
   return apiRequest<AuthSession>('/auth/me')
 }
 
 export function getDevAuthUserId() {
-  if (typeof window === 'undefined') return DEV_AUTH_USER_ID
-  return window.sessionStorage.getItem(DEV_AUTH_STORAGE_KEY) ?? DEV_AUTH_USER_ID
+  if (typeof window === 'undefined') throw new Error('Development authentication requires a browser environment')
+  const userId = window.sessionStorage.getItem(DEV_AUTH_STORAGE_KEY)
+  if (!userId) throw new Error('Development user is not selected. Provide a devUserId query parameter.')
+  return userId
 }
 
 export function setDevAuthUserId(userId: string) {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') throw new Error('Development authentication requires a browser environment')
   window.sessionStorage.setItem(DEV_AUTH_STORAGE_KEY, userId)
 }
 
@@ -127,8 +130,17 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   })
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => undefined)
-    throw new Error(payload?.error ?? `Request failed with ${response.status}`)
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch (error) {
+      throw new Error(`API request failed with status ${response.status} and returned invalid JSON`, { cause: error })
+    }
+
+    if (!isApiErrorPayload(payload)) {
+      throw new Error(`API request failed with status ${response.status} and returned no error message`)
+    }
+    throw new Error(payload.error)
   }
 
   return response.json() as Promise<T>
@@ -138,9 +150,17 @@ function buildHeaders(init?: RequestInit) {
   const devAuthUserId = getDevAuthUserId()
   return {
     ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-    ...(devAuthUserId ? { 'x-dev-user-id': devAuthUserId } : {}),
+    'x-dev-user-id': devAuthUserId,
     ...init?.headers,
   }
+}
+
+function isApiErrorPayload(payload: unknown): payload is { error: string } {
+  return typeof payload === 'object'
+    && payload !== null
+    && 'error' in payload
+    && typeof payload.error === 'string'
+    && payload.error.length > 0
 }
 
 function withQuery(params: URLSearchParams) {

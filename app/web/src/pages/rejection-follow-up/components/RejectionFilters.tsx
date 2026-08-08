@@ -34,10 +34,13 @@ export function RejectionFilters({
   onToggleProjectMenu,
   onToggleStatusMenu,
 }: RejectionFiltersProps) {
-  const selectedProject = projects.find((project) => project.id === projectFilter)
-  const selectedStatusLabel = statusFilter === 'all'
-    ? 'All'
-    : statusFilter === 'waiting_for_contact' ? 'Waiting for Contact' : 'Rejection Handled'
+  const selectedProject = projectFilter === 'all'
+    ? null
+    : projects.find((project) => project.id === projectFilter)
+  if (projectFilter !== 'all' && !selectedProject) {
+    throw new Error(`Selected rejection project does not exist: ${projectFilter}`)
+  }
+  const selectedStatusLabel = getStatusFilterLabel(statusFilter)
 
   return (
     <div className="mb-10 ml-5 flex items-center gap-3 max-[1100px]:mr-5 max-[1100px]:flex-wrap max-[760px]:ml-3">
@@ -52,7 +55,7 @@ export function RejectionFilters({
 
       <div className="relative">
         <button className={filterButtonClasses} type="button" aria-expanded={projectMenuOpen} onClick={onToggleProjectMenu}>
-          <span>Projects: {selectedProject?.name ?? 'All'}</span>
+          <span>Projects: {selectedProject ? selectedProject.name : 'All'}</span>
           <ChevronDown className={`transition-transform ${projectMenuOpen ? 'rotate-180' : ''}`} size={16} />
         </button>
         {projectMenuOpen && (
@@ -87,7 +90,15 @@ export function RejectionFilters({
 }
 
 function formatProjectStatus(project: Project) {
+  if (project.status === 'active') return 'Active'
   if (project.status === 'archived') return 'Archived'
   if (project.status === 'closed') return 'Closed'
-  return 'Active'
+  throw new Error(`Unsupported project status: ${String(project.status)}`)
+}
+
+function getStatusFilterLabel(status: RejectionStatusFilter) {
+  if (status === 'all') return 'All'
+  if (status === 'waiting_for_contact') return 'Waiting for Contact'
+  if (status === 'handled') return 'Rejection Handled'
+  throw new Error(`Unsupported rejection status filter: ${String(status)}`)
 }

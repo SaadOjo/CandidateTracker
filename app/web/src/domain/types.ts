@@ -8,6 +8,8 @@ export type ProjectStatus = 'active' | 'archived' | 'closed'
 
 export type ImportMode = 'auto_sync' | 'manual_import'
 
+export type CandidateSource = 'linkedin' | 'referral' | 'manual'
+
 export type PipelineStage =
   | 'pre_interview'
   | 'department_interview'
@@ -112,24 +114,24 @@ export interface ProjectStageComment {
 export interface NoteField {
   question: string
   answer: string
-  visibility?: 'all' | 'human_resource_only'
+  visibility: 'all' | 'human_resource_only'
 }
 
 export interface CandidateNote {
   id: string
-  authorRole?: 'human_resource' | 'hiring_manager'
-  author?: Pick<User, 'id' | 'name' | 'role'>
+  authorRole: 'human_resource' | 'hiring_manager'
+  author: Pick<User, 'id' | 'name' | 'role'>
   body?: string | null
   fields?: NoteField[] | null
-  visibility?: 'all' | 'human_resource_only'
+  visibility: 'all' | 'human_resource_only'
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
 }
 
 export interface CandidateNoteInput {
   body?: string
   fields?: NoteField[]
-  visibility?: 'all' | 'human_resource_only'
+  visibility: 'all' | 'human_resource_only'
 }
 
 export interface CandidateActivityEvent {
@@ -137,7 +139,7 @@ export interface CandidateActivityEvent {
   index?: number
   title: string
   subtitle?: string | null
-  occurredAt?: string
+  occurredAt: string
   createdAt?: string
   actorRole?: UserRole | null
   actor?: Pick<User, 'id' | 'name' | 'role'> | null
@@ -203,7 +205,7 @@ export interface Candidate {
   candidateId: string
   projectId: string
   name: string
-  source: string
+  source: CandidateSource
   linkedinProfileUrl?: string | null
   email?: string | null
   phone?: string | null

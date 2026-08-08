@@ -3,7 +3,9 @@ import type { RejectionFollowUp } from '../../domain/types'
 export type RejectionStatusFilter = 'all' | 'waiting_for_contact' | 'handled'
 
 export function getRejectionDisplayStatus(followUp: RejectionFollowUp): Exclude<RejectionStatusFilter, 'all'> {
-  return followUp.status === 'handled' ? 'handled' : 'waiting_for_contact'
+  if (followUp.status === 'handled') return 'handled'
+  if (followUp.status === 'waiting_for_contact' || followUp.status === 'not_reached') return 'waiting_for_contact'
+  throw new Error(`Unsupported rejection follow-up status: ${String(followUp.status)}`)
 }
 
 export function filterRejectionFollowUps(
@@ -29,7 +31,7 @@ export function filterRejectionFollowUps(
 
 export function formatEligibleDate(value: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid rejection eligibility date: ${value}`)
 
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',

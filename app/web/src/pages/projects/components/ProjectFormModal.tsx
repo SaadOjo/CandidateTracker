@@ -1,29 +1,36 @@
 import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useUsers } from '../../../app/queries/useUsers'
 import { ErrorMessage } from '../../../components/feedback/ErrorMessage'
-import { archiveProject, createProject, listUsers, updateProject } from '../../../data/api'
-import type { ImportMode, Project, ProjectFormInput, User } from '../../../domain/types'
+import { archiveProject, createProject, updateProject } from '../../../data/api'
+import type { ImportMode, Project, ProjectFormInput } from '../../../domain/types'
 import { ArchiveProjectAction } from './project-form/ArchiveProjectAction'
 import { ProjectAssignmentFields } from './project-form/ProjectAssignmentFields'
 import { ProjectBasicFields } from './project-form/ProjectBasicFields'
 import { ProjectSourceFields } from './project-form/ProjectSourceFields'
 
-interface ProjectFormModalProps {
-  mode: 'create' | 'edit'
+interface ProjectFormModalCommonProps {
   closeTo: string
-  project?: Project
+  currentUserId: string
   onSaved: () => Promise<void>
 }
+
+type ProjectFormModalProps = ProjectFormModalCommonProps & (
+  | { mode: 'create'; project?: never }
+  | { mode: 'edit'; project: Project }
+)
 
 const secondaryButtonClasses = 'inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border border-border-strong bg-white px-[13px] font-extrabold text-ink no-underline'
 const primaryButtonClasses = 'inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-action-primary bg-action-primary px-[15px] font-extrabold text-white'
 
-export function ProjectFormModal({ mode, closeTo, project, onSaved }: ProjectFormModalProps) {
+export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSaved }: ProjectFormModalProps) {
   const navigate = useNavigate()
-  const [hiringManagers, setHiringManagers] = useState<User[]>([])
-  const [humanResourceUsers, setHumanResourceUsers] = useState<User[]>([])
+  const usersQuery = useUsers(currentUserId)
+  const users = usersQuery.data ?? []
+  const hiringManagers = users.filter((user) => user.role === 'hiring_manager')
+  const humanResourceUsers = users.filter((user) => user.role === 'human_resource')
   const [name, setName] = useState(project?.name ?? '')
   const [position, setPosition] = useState(project?.position ?? '')
   const [notes, setNotes] = useState(project?.notes ?? '')
@@ -31,34 +38,12 @@ export function ProjectFormModal({ mode, closeTo, project, onSaved }: ProjectFor
   const [assignedHumanResourceUserIds, setAssignedHumanResourceUserIds] = useState<string[]>(project?.assignedHumanResourceUserIds ?? [])
   const [linkedinProjectId, setLinkedinProjectId] = useState(project?.linkedinProjectId ?? '')
   const [importMode, setImportMode] = useState<ImportMode>(project?.importMode ?? 'auto_sync')
-  const [loadingUsers, setLoadingUsers] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const loadingUsers = usersQuery.isPending
+  const displayError = error ?? (usersQuery.isError ? usersQuery.error.message : null)
 
-  useEffect(() => {
-    let active = true
-
-    async function loadAssignableUsers() {
-      setLoadingUsers(true)
-      setError(null)
-      try {
-        const [managerItems, humanResourceItems] = await Promise.all([listUsers('hiring_manager'), listUsers('human_resource')])
-        if (!active) return
-        setHiringManagers(managerItems)
-        setHumanResourceUsers(humanResourceItems)
-      } catch (requestError) {
-        if (active) setError(requestError instanceof Error ? requestError.message : 'Could not load users')
-      } finally {
-        if (active) setLoadingUsers(false)
-      }
-    }
-
-    void loadAssignableUsers()
-
-    return () => {
-      active = false
-    }
-  }, [])
+  if (mode === 'edit' && !project) throw new Error('Edit project modal requires a project')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -69,8 +54,9 @@ export function ProjectFormModal({ mode, closeTo, project, onSaved }: ProjectFor
 
     setSubmitting(true)
     try {
-      const savedProject =
-        mode === 'create' ? await createProject(input) : await updateProject(project?.id ?? '', input)
+      const savedProject = mode === 'create'
+        ? await createProject(input)
+        : await updateProject(project.id, input)
       await onSaved()
       navigate(mode === 'create' ? `/projects/${savedProject.id}/pipeline/pre_interview` : closeTo)
     } catch (requestError) {
@@ -81,7 +67,7 @@ export function ProjectFormModal({ mode, closeTo, project, onSaved }: ProjectFor
   }
 
   async function handleArchive() {
-    if (!project) return
+    if (mode !== 'edit' || !project) throw new Error('Only an existing project can be archived')
 
     setSubmitting(true)
     setError(null)
@@ -174,7 +160,7 @@ export function ProjectFormModal({ mode, closeTo, project, onSaved }: ProjectFor
           onLinkedinProjectIdChange={setLinkedinProjectId}
         />
 
-        {error && <ErrorMessage message={error} />}
+        {displayError && <ErrorMessage message={displayError} />}
 
         <div className="flex justify-end gap-2.5 border-t border-divider pt-5">
           <Link className={secondaryButtonClasses} to={closeTo}>

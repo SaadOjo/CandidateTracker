@@ -19,17 +19,20 @@ interface PipelineTableProps {
   totalCandidates: number
 }
 
-const statusTones: Partial<Record<CandidateStatus, StatusIndicatorTone>> = {
+const statusTones: Record<CandidateStatus, StatusIndicatorTone> = {
+  waiting_for_contact: 'muted',
   scheduled: 'accent',
-  assessment_sent: 'accent',
   not_reached: 'danger',
-  rejected: 'danger',
   withdrawn: 'default',
+  rejected: 'danger',
+  assessment_sent: 'accent',
+  waitlisted: 'accent-muted',
   approved_for_offer: 'accent-strong',
   final_check_sent: 'success',
   offer_sent: 'success',
+  offer_rejected: 'muted',
   offer_accepted: 'success',
-  waitlisted: 'accent-muted',
+  proceeded_with_another_candidate: 'muted',
 }
 
 function getGridClasses(role: 'human_resource' | 'hiring_manager', stage: PipelineStage) {
@@ -105,9 +108,11 @@ export function PipelineTable({ candidates, columns, loading, projectId, role, s
 function StatusCell({ candidate, stage }: { candidate: Candidate; stage: PipelineStage }) {
   if (stage === 'manager_review' && candidate.status === 'waiting_for_contact') return <span className="text-xs text-muted">--</span>
   const status = stage === 'pre_interview' && candidate.status === 'scheduled' ? 'Contact Successful' : statusLabels[candidate.status]
-  const tone: StatusIndicatorTone = stage === 'pre_interview' && candidate.status === 'scheduled'
+  const tone = stage === 'pre_interview' && candidate.status === 'scheduled'
     ? 'accent'
-    : statusTones[candidate.status] ?? 'muted'
+    : statusTones[candidate.status]
+  if (!status) throw new Error(`Unsupported candidate status label: ${String(candidate.status)}`)
+  if (!tone) throw new Error(`Unsupported candidate status tone: ${String(candidate.status)}`)
 
   return <StatusIndicator className="justify-self-center text-[13px] font-extrabold" label={status} tone={tone} />
 }

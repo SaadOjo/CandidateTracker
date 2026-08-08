@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useCandidates } from '../../app/queries/useCandidates'
+import { useProject } from '../../app/queries/useProject'
 import { ErrorMessage } from '../../components/feedback/ErrorMessage'
+import { LoadingState } from '../../components/feedback/LoadingState'
 import { SearchField } from '../../components/ui/SearchField'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { getProject, listCandidates, updateProjectStageComment } from '../../data/api'
+import { updateProjectStageComment } from '../../data/api'
 import { projectStatusLabels, stageLabels, stageOrder } from '../../domain/labels'
-import type { AuthSession, Candidate, Project } from '../../domain/types'
+import { requireCandidateWorkflowRole } from '../../domain/roles'
+import type { AuthSession, Candidate } from '../../domain/types'
 import { BasicCommentModal } from './components/BasicCommentModal'
 import { PipelineTable } from './components/PipelineTable'
 import { formatDate, getStageColumns, getStageCounts, isPipelineStage, sortCandidatePriority } from './pipelineHelpers'
@@ -15,57 +19,87 @@ interface ProjectPipelinePageProps {
 }
 
 const contentWidthClasses = 'mx-auto w-[min(1320px,calc(100vw-330px))] max-w-full max-[1100px]:w-[calc(100vw-48px)] max-[760px]:w-full'
+const emptyCandidates: Candidate[] = []
+const pipelineModalNames = new Set(['hiring_manager-comments', 'human_resource-comments'])
 
 export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
-  const { projectId = '', stage = 'pre_interview' } = useParams()
-  const [searchParams] = useSearchParams()
-  const selectedStage = isPipelineStage(stage) ? stage : 'pre_interview'
-  const role = session.appRole === 'hiring_manager' ? 'hiring_manager' : 'human_resource'
-  const navigate = useNavigate()
-  const [project, setProject] = useState<Project | null>(null)
-  const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [projectCandidates, setProjectCandidates] = useState<Candidate[]>([])
-  const [query, setQuery] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { projectId, stage } = useParams()
+  if (!projectId) throw new Error('Project pipeline route requires a projectId')
+  if (!isPipelineStage(stage)) throw new Error(`Invalid pipeline stage: ${String(stage)}`)
 
-  const loadPipeline = useCallback(async () => {
-    if (!projectId) return
-    setLoading(true)
-    setError(null)
-    try {
-      const [projectItem, stageCandidates, allCandidates] = await Promise.all([
-        getProject(projectId),
-        listCandidates({ projectId, stage: selectedStage, query }),
-        listCandidates({ projectId }),
-      ])
-      setProject(projectItem)
-      setCandidates(stageCandidates)
-      setProjectCandidates(allCandidates)
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Could not load pipeline')
-    } finally {
-      setLoading(false)
-    }
-  }, [projectId, query, selectedStage])
+  const [searchParams] = useSearchParams()
+  const selectedStage = stage
+  const role = requireCandidateWorkflowRole(session.appRole)
+  const navigate = useNavigate()
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const projectQuery = useProject(session.userId, projectId)
+  const candidatesQuery = useCandidates(
+    session.userId,
+    { projectId, stage: selectedStage, query: debouncedQuery },
+    Boolean(projectId),
+  )
+  const projectCandidatesQuery = useCandidates(session.userId, { projectId }, Boolean(projectId))
+  const project = projectQuery.data ?? null
+  const candidates = candidatesQuery.data ?? emptyCandidates
+  const projectCandidates = projectCandidatesQuery.data ?? emptyCandidates
+  const loading = projectQuery.isPending || candidatesQuery.isPending || projectCandidatesQuery.isPending
+  const error = projectQuery.isError
+    ? projectQuery.error.message
+    : candidatesQuery.isError
+      ? candidatesQuery.error.message
+      : projectCandidatesQuery.isError ? projectCandidatesQuery.error.message : null
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      void loadPipeline()
+      setDebouncedQuery(query)
     }, 140)
 
     return () => window.clearTimeout(timeout)
-  }, [loadPipeline])
+  }, [query])
+
+  async function loadPipeline() {
+    await Promise.all([
+      projectQuery.refetch(),
+      candidatesQuery.refetch(),
+      projectCandidatesQuery.refetch(),
+    ])
+  }
 
   const columns = getStageColumns(role, selectedStage)
   const sortedCandidates = useMemo(() => [...candidates].sort(sortCandidatePriority), [candidates])
   const stageCounts = useMemo(() => getStageCounts(projectCandidates), [projectCandidates])
+  const modal = searchParams.get('modal')
+  if (modal !== null && !pipelineModalNames.has(modal)) throw new Error(`Unsupported pipeline modal: ${modal}`)
+  if (modal === 'hiring_manager-comments' && role !== 'hiring_manager') {
+    throw new Error('Hiring Manager comments modal requires the Hiring Manager role')
+  }
+  if (modal === 'human_resource-comments' && role !== 'human_resource') {
+    throw new Error('Human Resource comments modal requires the Human Resource role')
+  }
+
+  if (loading) {
+    return (
+      <section className={`${contentWidthClasses} mt-10 rounded-lg border border-border bg-white p-[26px]`}>
+        <LoadingState label="Loading project pipeline" />
+      </section>
+    )
+  }
+
+  if (error) {
+    return <ErrorMessage className={`${contentWidthClasses} mt-10`} message={error} />
+  }
+
+  if (!project) throw new Error('Project query completed without project data')
+  if (!candidatesQuery.data) throw new Error('Candidate query completed without candidate data')
+  if (!projectCandidatesQuery.data) throw new Error('Project candidate query completed without candidate data')
+
   const hasAcceptedOffer = projectCandidates.some((candidate) => candidate.status === 'offer_accepted')
-  const status = project?.status === 'active' && hasAcceptedOffer ? 'candidate_accepted' : project?.status ?? 'active'
-  const comments = project?.stageComments?.filter((comment) => comment.stage === selectedStage) ?? []
+  const status = project.status === 'active' && hasAcceptedOffer ? 'candidate_accepted' : project.status
+  const comments = project.stageComments?.filter((comment) => comment.stage === selectedStage) ?? []
   const userCommentRole = role === 'hiring_manager' ? 'hiring_manager' : 'human_resource'
   const userComments = comments.filter((comment) => comment.authorRole === userCommentRole)
-  const totalCandidates = project?.candidateCount ?? projectCandidates.length
+  const totalCandidates = project.candidateCount
   const closeTo = `/projects/${projectId}/pipeline/${selectedStage}`
 
   return (
@@ -77,18 +111,18 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
               <h1 className="m-0 text-4xl leading-10 font-extrabold text-heading">Project Pipeline</h1>
               <StatusBadge label={projectStatusLabels[status]} tone={status} />
             </div>
-            <h2 className="m-0 text-2xl leading-[30px] font-bold text-subtle">{project?.name ?? 'Project'}</h2>
-            <p className="m-0 text-[15px] text-body">Position: {project?.position ?? '—'}</p>
-            {project?.notes && <small className="mt-0.5 block text-xs leading-[18px] text-muted italic">{project.notes}</small>}
+            <h2 className="m-0 text-2xl leading-[30px] font-bold text-subtle">{project.name}</h2>
+            <p className="m-0 text-[15px] text-body">Position: {project.position}</p>
+            {project.notes && <small className="mt-0.5 block text-xs leading-[18px] text-muted italic">{project.notes}</small>}
           </div>
           <div className="grid justify-items-end gap-2.5 pt-0.5 text-right">
-            {project?.createdAt && (
+            {project.createdAt && (
               <div>
                 <span className="block text-[11px] font-extrabold text-faint uppercase">Created</span>
                 <strong className="mt-1 block text-[13px] font-bold text-body">{formatDate(project.createdAt)}</strong>
               </div>
             )}
-            {project?.archivedAt && (
+            {project.archivedAt && (
               <div>
                 <span className="block text-[11px] font-extrabold text-faint uppercase">Archived</span>
                 <strong className="mt-1 block text-[13px] font-bold text-body">{formatDate(project.archivedAt)}</strong>
@@ -135,8 +169,6 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
         </section>
       )}
 
-      {error && <ErrorMessage className={`${contentWidthClasses} mt-[18px]`} message={error} />}
-
       <PipelineTable
         candidates={sortedCandidates}
         columns={columns}
@@ -147,7 +179,7 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
         totalCandidates={totalCandidates}
       />
 
-      {searchParams.get('modal') === 'hiring_manager-comments' && role === 'hiring_manager' && (
+      {modal === 'hiring_manager-comments' && (
         <BasicCommentModal
           title="Hiring Manager Comments"
           closeTo={closeTo}
@@ -158,7 +190,7 @@ export function ProjectPipelinePage({ session }: ProjectPipelinePageProps) {
           }}
         />
       )}
-      {searchParams.get('modal') === 'human_resource-comments' && role === 'human_resource' && (
+      {modal === 'human_resource-comments' && (
         <BasicCommentModal
           title="Human Resource Comments"
           closeTo={closeTo}

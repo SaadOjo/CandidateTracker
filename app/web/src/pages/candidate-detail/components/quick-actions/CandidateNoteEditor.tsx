@@ -21,7 +21,7 @@ export function CandidateNoteEditor({ role, session, candidate, onSave, onError 
   const [textNote, setTextNote] = useState('')
   const [formNote, setFormNote] = useState<Record<string, string>>({})
   const existingOwnNote = useMemo(
-    () => candidate.notes.find((note) => note.author?.id === session.userId),
+    () => candidate.notes.find((note) => note.author.id === session.userId),
     [candidate.notes, session.userId],
   )
   const hasContent = hasNoteDraftContent(role, candidate, textNote, formNote)

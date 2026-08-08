@@ -4,11 +4,13 @@ interface StatusBadgeProps {
 }
 
 const toneClasses: Record<string, string> = {
+  active: 'bg-accent-soft text-accent',
   archived: 'bg-surface-muted text-body',
   muted: 'bg-surface-muted text-body',
   closed: 'bg-surface-closed text-ink',
   success: 'bg-success-soft text-success-strong',
   candidate_accepted: 'bg-success-muted text-success',
+  scheduled: 'bg-accent-soft text-accent',
   final_check_sent: 'bg-success-muted text-success',
   offer_sent: 'bg-success-muted text-success',
   offer_accepted: 'bg-success-muted text-success',
@@ -24,7 +26,8 @@ const toneClasses: Record<string, string> = {
 }
 
 export function StatusBadge({ label, tone }: StatusBadgeProps) {
-  const toneClassName = toneClasses[tone] ?? 'bg-accent-soft text-accent'
+  const toneClassName = toneClasses[tone]
+  if (!toneClassName) throw new Error(`Unsupported status badge tone: ${tone}`)
 
   return (
     <span className={`inline-flex h-[22px] w-fit items-center rounded-full px-2.5 text-[11px] font-extrabold tracking-normal ${toneClassName}`}>
