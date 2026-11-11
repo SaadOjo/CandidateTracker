@@ -15,8 +15,8 @@ export function ContactCardModal({ candidate, closeTo }: { candidate: Candidate;
           <ContactInfoRow icon={<Phone size={18} />} label="Phone" value={candidate.phone ?? '—'} />
         </div>
         <div className="grid justify-items-center gap-2.5">
-          <button className="h-10 w-[188px] rounded border-0 bg-surface-action text-xs font-extrabold text-ink" type="button" onClick={() => navigator.clipboard.writeText(candidate.email ?? '')}>Copy Email</button>
-          <button className="h-10 w-[188px] rounded border-0 bg-surface-muted text-xs font-extrabold text-ink" type="button" onClick={() => navigator.clipboard.writeText(candidate.phone ?? '')}>Copy Phone</button>
+          <button className="h-10 w-[188px] rounded border-0 button button-secondary text-xs font-extrabold" type="button" onClick={() => navigator.clipboard.writeText(candidate.email ?? '')}>Copy Email</button>
+          <button className="h-10 w-[188px] rounded border-0 button button-secondary text-xs font-extrabold" type="button" onClick={() => navigator.clipboard.writeText(candidate.phone ?? '')}>Copy Phone</button>
         </div>
       </section>
     </RouteModal>

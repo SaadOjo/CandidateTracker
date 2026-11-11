@@ -4,8 +4,8 @@ import { formatSource } from '../candidateDetailHelpers'
 
 export function InlineResume({ candidate }: { candidate: Candidate }) {
   return (
-    <section className="mt-7 grid min-h-[280px] w-[min(694px,100%)] content-start rounded-panel border border-border bg-white px-[18px] py-5">
-      <button className="mb-[18px] ml-auto inline-flex h-[34px] w-fit items-center justify-center gap-2 rounded border-0 bg-surface-action px-3 text-xs font-extrabold text-ink" type="button">
+    <section className="grid min-h-[280px] min-w-0 content-start rounded-lg border border-border bg-white p-6 max-[760px]:p-4">
+      <button className="mb-[18px] ml-auto inline-flex h-[34px] w-fit items-center justify-center gap-2 rounded border-0 button button-secondary px-3 text-xs font-extrabold" type="button" disabled title="Resume download is not available yet">
         <FileText size={14} />
         Download
       </button>

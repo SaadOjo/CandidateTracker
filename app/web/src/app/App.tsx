@@ -1,76 +1,58 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import { getCurrentSession, setDevAuthUserId } from '../data/api'
+import { DevAccountSwitcher } from '../auth/DevAccountSwitcher'
+import { getAuthMode } from '../auth/auth'
+import { useAuth } from '../auth/useAuth'
 import { AppRoutes } from './AppRoutes'
 import { AppLayout, shellClasses } from './layout/AppLayout'
-import { currentSessionQueryKey, useCurrentSession } from './queries/useCurrentSession'
 
 const centeredPanelClasses = 'rounded-lg border border-border bg-white p-[26px]'
 const eyebrowClasses = 'm-0 text-[11px] font-extrabold tracking-[0.08em] text-muted uppercase'
 
 export function App() {
-  const location = useLocation()
-  const queryClient = useQueryClient()
-  const sessionQuery = useCurrentSession(location.search)
-  const [accountSwitching, setAccountSwitching] = useState(false)
-  const [accountSwitchError, setAccountSwitchError] = useState<string | null>(null)
+  const { state } = useAuth()
+  const authMode = getAuthMode()
 
-  async function handleAccountChange(userId: string) {
-    setAccountSwitching(true)
-    setAccountSwitchError(null)
-    queryClient.removeQueries({
-      predicate: (query) => query.queryKey[0] !== 'current-session',
-    })
-    setDevAuthUserId(userId)
-
-    try {
-      const session = await getCurrentSession()
-      const activeSessionKey = currentSessionQueryKey(location.search)
-      queryClient.setQueryData(activeSessionKey, session)
-      queryClient.removeQueries({
-        predicate: (query) =>
-          query.queryKey[0] !== activeSessionKey[0] || query.queryKey[1] !== activeSessionKey[1],
-      })
-    } catch (error) {
-      queryClient.clear()
-      setAccountSwitchError(error instanceof Error ? error.message : 'Could not change current user')
-    } finally {
-      setAccountSwitching(false)
-    }
+  if (state.status === 'loading' || state.status === 'switching') {
+    return (
+      <div className={`${shellClasses} place-items-center p-6`}>
+        <section className={centeredPanelClasses}>
+          <p className={eyebrowClasses}>Candidate Tracker</p>
+          <h1>{state.status === 'switching' ? 'Switching account' : 'Loading account'}</h1>
+        </section>
+      </div>
+    )
   }
 
-  const sessionError = accountSwitchError ?? (sessionQuery.isError ? sessionQuery.error.message : null)
-
-  if (sessionError) {
+  if (state.status === 'error') {
     return (
       <div className={`${shellClasses} place-items-center p-6`}>
         <section className={centeredPanelClasses}>
           <p className={eyebrowClasses}>Authentication</p>
           <h1>Unable to load current user</h1>
-          <p className="m-0 flex items-center gap-2 font-bold text-danger">{sessionError}</p>
+          <p className="m-0 flex items-center gap-2 font-bold text-danger">{state.message}</p>
         </section>
       </div>
     )
   }
 
-  if (sessionQuery.isPending || accountSwitching) {
+  if (state.status === 'unauthenticated') {
+    if (authMode !== 'development') {
+      throw new Error('Production login controls are not implemented')
+    }
+
     return (
       <div className={`${shellClasses} place-items-center p-6`}>
-        <section className={centeredPanelClasses}>
-          <p className={eyebrowClasses}>Candidate Tracker</p>
-          <h1>{accountSwitching ? 'Switching account' : 'Loading account'}</h1>
+        <section className={`${centeredPanelClasses} grid gap-4`}>
+          <p className={eyebrowClasses}>Authentication</p>
+          <h1 className="m-0">Select a development account</h1>
+          <DevAccountSwitcher />
         </section>
       </div>
     )
   }
 
-  const session = sessionQuery.data
-  if (!session) throw new Error('Current session query completed without session data')
-
   return (
-    <AppLayout session={session} onAccountChange={handleAccountChange}>
-      <AppRoutes key={session.userId} session={session} />
+    <AppLayout session={state.session}>
+      <AppRoutes key={state.session.userId} session={state.session} />
     </AppLayout>
   )
 }

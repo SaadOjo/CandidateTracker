@@ -31,7 +31,8 @@ export function ProjectSourceFields({ linkedinProjectId, importMode, onLinkedinP
           <div className="grid grid-cols-2 gap-1 rounded-md bg-surface-muted p-1">
             <button
               type="button"
-              className={`inline-flex h-[34px] items-center justify-center gap-1.5 rounded-compact border-0 px-2.5 ${importMode === 'auto_sync' ? 'bg-white font-extrabold text-accent' : 'bg-transparent text-body'}`}
+              className={`inline-flex h-[34px] items-center justify-center gap-1.5 rounded-compact border-0 px-2.5 control-selectable ${importMode === 'auto_sync' ? 'font-extrabold' : ''}`}
+              aria-pressed={importMode === 'auto_sync'}
               onClick={() => onImportModeChange('auto_sync')}
             >
               {importMode === 'auto_sync' && <CheckCircle2 size={15} />}
@@ -39,7 +40,8 @@ export function ProjectSourceFields({ linkedinProjectId, importMode, onLinkedinP
             </button>
             <button
               type="button"
-              className={`inline-flex h-[34px] items-center justify-center gap-1.5 rounded-compact border-0 px-2.5 ${importMode === 'manual_import' ? 'bg-white font-extrabold text-accent' : 'bg-transparent text-body'}`}
+              className={`inline-flex h-[34px] items-center justify-center gap-1.5 rounded-compact border-0 px-2.5 control-selectable ${importMode === 'manual_import' ? 'font-extrabold' : ''}`}
+              aria-pressed={importMode === 'manual_import'}
               onClick={() => onImportModeChange('manual_import')}
             >
               {importMode === 'manual_import' && <CheckCircle2 size={15} />}

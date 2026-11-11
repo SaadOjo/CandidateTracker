@@ -4,7 +4,7 @@ import { ErrorMessage } from '../../../components/feedback/ErrorMessage'
 import { RouteFormModal } from '../../../components/ui/RouteFormModal'
 import { logRejectionContactAttempt } from '../../../data/api'
 import type { Candidate, RejectionContactAttemptInput } from '../../../domain/types'
-import { notifyCandidateChanged, toDateTimeLocalValue } from '../candidateDetailHelpers'
+import { defaultContactDate, isQuarterHourDateTime, toDateTimeLocalValue } from '../candidateDetailHelpers'
 import { ContactAttemptFields } from '../components/contact-attempt/ContactAttemptFields'
 
 interface RejectionContactModalProps {
@@ -16,7 +16,7 @@ interface RejectionContactModalProps {
 export function RejectionContactModal({ candidate, closeTo, onChanged }: RejectionContactModalProps) {
   const navigate = useNavigate()
   const [result, setResult] = useState<RejectionContactAttemptInput['result']>('not_reached')
-  const [attemptedAt, setAttemptedAt] = useState(() => toDateTimeLocalValue(new Date()))
+  const [attemptedAt, setAttemptedAt] = useState(() => toDateTimeLocalValue(defaultContactDate()))
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +24,10 @@ export function RejectionContactModal({ candidate, closeTo, onChanged }: Rejecti
   async function saveLog() {
     if (!candidate.rejectionFollowUp) {
       setError('Rejection follow-up was not found.')
+      return
+    }
+    if (!isQuarterHourDateTime(attemptedAt)) {
+      setError('Choose a valid contact date and time in 15-minute intervals.')
       return
     }
 
@@ -36,7 +40,6 @@ export function RejectionContactModal({ candidate, closeTo, onChanged }: Rejecti
         notes: notes.trim() || undefined,
       })
       await onChanged()
-      notifyCandidateChanged()
       navigate(closeTo)
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Could not save rejection contact log')
@@ -47,6 +50,7 @@ export function RejectionContactModal({ candidate, closeTo, onChanged }: Rejecti
 
   return (
     <RouteFormModal
+      iconActions
       closeTo={closeTo}
       submitLabel="Save Rejection Log"
       submitting={saving}

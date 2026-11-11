@@ -8,9 +8,9 @@ export function candidateQueryKey(currentUserId: string, candidateId: string) {
 export function useCandidate(currentUserId: string, candidateId: string, enabled = true) {
   return useQuery({
     queryKey: candidateQueryKey(currentUserId, candidateId),
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (!candidateId) throw new Error('A candidate ID is required to load a candidate')
-      return getCandidate(candidateId)
+      return getCandidate(candidateId, signal)
     },
     enabled: enabled && Boolean(candidateId),
   })

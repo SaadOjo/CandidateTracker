@@ -7,10 +7,11 @@ import { stageLabels } from '../../../domain/labels'
 import type { Candidate } from '../../../domain/types'
 import {
   defaultInterviewDate,
+  defaultContactDate,
+  isQuarterHourDateTime,
   getContactResultLabel,
   getContactResultOptions,
   getContactTransitionAction,
-  notifyCandidateChanged,
   toDateTimeLocalValue,
 } from '../candidateDetailHelpers'
 import type { ContactLogResult } from '../candidateDetailHelpers'
@@ -19,14 +20,15 @@ import { ContactAttemptFields } from '../components/contact-attempt/ContactAttem
 interface LogContactAttemptModalProps {
   candidate: Candidate
   closeTo: string
+  cancelTo: string
   onChanged: () => Promise<void>
 }
 
-export function LogContactAttemptModal({ candidate, closeTo, onChanged }: LogContactAttemptModalProps) {
+export function LogContactAttemptModal({ candidate, closeTo, cancelTo, onChanged }: LogContactAttemptModalProps) {
   const navigate = useNavigate()
   const options = getContactResultOptions(candidate)
   const [result, setResult] = useState<ContactLogResult>(options[0])
-  const [attemptedAt, setAttemptedAt] = useState(() => toDateTimeLocalValue(new Date()))
+  const [attemptedAt, setAttemptedAt] = useState(() => toDateTimeLocalValue(defaultContactDate()))
   const [interviewStartAt, setInterviewStartAt] = useState(() => toDateTimeLocalValue(defaultInterviewDate()))
   const [meetingUrl, setMeetingUrl] = useState('')
   const [notes, setNotes] = useState('')
@@ -35,6 +37,14 @@ export function LogContactAttemptModal({ candidate, closeTo, onChanged }: LogCon
   const showInterviewFields = result === 'scheduled'
 
   async function saveLog() {
+    if (!isQuarterHourDateTime(attemptedAt)) {
+      setError('Choose a valid contact date and time in 15-minute intervals.')
+      return
+    }
+    if (showInterviewFields && !isQuarterHourDateTime(interviewStartAt)) {
+      setError('Choose a valid interview date and time in 15-minute intervals.')
+      return
+    }
     setSaving(true)
     setError(null)
     if (showInterviewFields && !meetingUrl.trim()) {
@@ -52,7 +62,6 @@ export function LogContactAttemptModal({ candidate, closeTo, onChanged }: LogCon
         meetingUrl: showInterviewFields ? meetingUrl.trim() || undefined : undefined,
       })
       await onChanged()
-      notifyCandidateChanged()
       navigate(closeTo)
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Could not save contact log')
@@ -63,7 +72,8 @@ export function LogContactAttemptModal({ candidate, closeTo, onChanged }: LogCon
 
   return (
     <RouteFormModal
-      closeTo={closeTo}
+      iconActions
+      closeTo={cancelTo}
       submitLabel="Save Log"
       submitting={saving}
       subtitle={`${candidate.name} · ${stageLabels[candidate.stage]}`}

@@ -18,18 +18,18 @@ interface CollapsibleActionMenuProps {
   onSelect: (action: CandidateTransitionAction) => void
 }
 
-const actionClasses = 'flex min-h-5 items-center gap-3 border-0 bg-transparent px-2.5 text-left text-sm font-bold text-ink no-underline'
+const actionClasses = 'flex min-h-5 items-center gap-3 border-0 button rounded px-2.5 text-left text-sm font-bold no-underline'
 const menuButtonClasses = `${actionClasses} h-auto py-2 text-[13px] leading-[18px]`
 const toneClasses = {
-  default: '',
-  accent: 'text-accent',
-  danger: 'text-danger',
+  default: 'button-primary',
+  accent: 'button-primary',
+  danger: 'button-danger',
 }
 
 export function CollapsibleActionMenu({ label, icon, open, items, busyAction, onToggle, onSelect }: CollapsibleActionMenuProps) {
   return (
     <div className="grid gap-3">
-      <button className={actionClasses} type="button" onClick={onToggle}>
+      <button className={`${actionClasses} button-text`} type="button" aria-expanded={open} onClick={onToggle}>
         {icon}
         {label}
         <ChevronDown className={`ml-auto transition-transform duration-180 ${open ? 'rotate-180' : ''}`} size={16} />

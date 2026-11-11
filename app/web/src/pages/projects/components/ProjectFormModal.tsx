@@ -1,10 +1,12 @@
-import { X } from 'lucide-react'
+import { Download, X } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useUsers } from '../../../app/queries/useUsers'
 import { ErrorMessage } from '../../../components/feedback/ErrorMessage'
-import { archiveProject, createProject, updateProject } from '../../../data/api'
+import { archiveProject, createProject, updateProject, getSimulatorStatus, getSimulatorProjects, getSimulatorProject, importSimulatorProject } from '../../../data/api'
+import type { SimulatorProjectChoice, SimulatorProjectPreview } from '../../../data/api'
 import type { ImportMode, Project, ProjectFormInput } from '../../../domain/types'
 import { ArchiveProjectAction } from './project-form/ArchiveProjectAction'
 import { ProjectAssignmentFields } from './project-form/ProjectAssignmentFields'
@@ -22,8 +24,8 @@ type ProjectFormModalProps = ProjectFormModalCommonProps & (
   | { mode: 'edit'; project: Project }
 )
 
-const secondaryButtonClasses = 'inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border border-border-strong bg-white px-[13px] font-extrabold text-ink no-underline'
-const primaryButtonClasses = 'inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-action-primary bg-action-primary px-[15px] font-extrabold text-white'
+const secondaryButtonClasses = 'inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border button button-secondary px-[13px] font-extrabold no-underline'
+const primaryButtonClasses = 'inline-flex min-h-10 items-center justify-center gap-2 rounded-md border button button-primary px-[15px] font-extrabold'
 
 export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSaved }: ProjectFormModalProps) {
   const navigate = useNavigate()
@@ -40,6 +42,9 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
   const [importMode, setImportMode] = useState<ImportMode>(project?.importMode ?? 'auto_sync')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [simulatorProject, setSimulatorProject] = useState<SimulatorProjectPreview | null>(null)
+  const [simulatorProjects, setSimulatorProjects] = useState<SimulatorProjectChoice[] | null>(null)
+  const simulatorStatus = useQuery({ queryKey: ['simulator-status', currentUserId], queryFn: ({ signal }) => getSimulatorStatus(signal), enabled: mode === 'create' })
   const loadingUsers = usersQuery.isPending
   const displayError = error ?? (usersQuery.isError ? usersQuery.error.message : null)
 
@@ -49,12 +54,16 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
     event.preventDefault()
     setError(null)
 
+    if (simulatorProjects && !simulatorProject) { setError('Select an exported simulator project.'); return }
+
     const input = buildProjectInput()
     if (!input) return
 
     setSubmitting(true)
     try {
-      const savedProject = mode === 'create'
+      const savedProject = mode === 'create' && simulatorProject
+        ? await importSimulatorProject(simulatorProject.project.id, input)
+        : mode === 'create'
         ? await createProject(input)
         : await updateProject(project.id, input)
       await onSaved()
@@ -64,6 +73,31 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
     } finally {
       setSubmitting(false)
     }
+  }
+
+  async function loadSimulatorProjects() {
+    setSubmitting(true)
+    setError(null)
+    try { setSimulatorProjects(await getSimulatorProjects()) }
+    catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Could not load simulator projects') }
+    finally { setSubmitting(false) }
+  }
+
+  async function loadSimulatorProject(id: string) {
+    setSimulatorProject(null)
+    if (!id) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const source = await getSimulatorProject(id)
+      setSimulatorProject(source)
+      setName(source.project.name)
+      setPosition(source.project.position)
+      setLinkedinProjectId('')
+      setNotes('')
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Could not load simulator project')
+    } finally { setSubmitting(false) }
   }
 
   async function handleArchive() {
@@ -122,7 +156,7 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
             </h2>
           </div>
           <Link
-            className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border border-border-strong bg-white font-extrabold text-body no-underline"
+            className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border button button-secondary font-extrabold no-underline"
             to={closeTo}
             aria-label="Close"
           >
@@ -134,14 +168,36 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
           <ArchiveProjectAction project={project} submitting={submitting} onConfirm={handleArchive} />
         )}
 
-        <ProjectBasicFields
+        {mode === 'create' && simulatorStatus.data?.enabled && !simulatorProjects && (
+          <button type="button" className={secondaryButtonClasses} disabled={submitting} onClick={loadSimulatorProjects}>
+            <Download size={18} /> Import Simulator Project
+          </button>
+        )}
+        {simulatorStatus.isError && <ErrorMessage message={simulatorStatus.error.message} />}
+        {simulatorProjects ? (
+          <section className="border-y border-divider py-4">
+            <label htmlFor="simulator-source-project" className="mb-2 block text-sm font-bold">Simulator Project</label>
+            <select id="simulator-source-project" className="mb-4 w-full rounded-md border border-border-strong p-2" value={simulatorProject?.project.id ?? ''} disabled={submitting} onChange={(event) => void loadSimulatorProject(event.target.value)}>
+              <option value="">Select exported project</option>
+              {simulatorProjects.map((source) => <option key={source.id} value={source.id} disabled={source.exportedAt === null}>{source.name}{source.exportedAt === null ? ' (not exported)' : ''}</option>)}
+            </select>
+            {!simulatorProjects.some((source) => source.exportedAt !== null) && <p>No exported projects available.</p>}
+            {simulatorProject && <>
+            <h3 className="m-0 text-lg font-bold">{simulatorProject.project.name}</h3>
+            <p>{simulatorProject.project.company} / {simulatorProject.project.position}</p>
+            <p>{simulatorProject.shortlistedCount} shortlisted / {simulatorProject.candidateCount} source candidates</p>
+            <p className="text-sm text-muted">Source: local simulator / Stage: shortlisted / Destination: Pre-interview, Waiting for contact</p>
+            </>}
+            <button type="button" className={secondaryButtonClasses} disabled={submitting} onClick={() => { setSimulatorProject(null); setSimulatorProjects(null) }}>Cancel Simulator Import</button>
+          </section>
+        ) : <ProjectBasicFields
           name={name}
           notes={notes}
           position={position}
           onNameChange={setName}
           onNotesChange={setNotes}
           onPositionChange={setPosition}
-        />
+        />}
 
         <ProjectAssignmentFields
           assignedHumanResourceUserIds={assignedHumanResourceUserIds}
@@ -153,12 +209,12 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
           onHumanResourceToggle={toggleHumanResourceUser}
         />
 
-        <ProjectSourceFields
+        {!simulatorProjects && !project?.simulatorTracking && <ProjectSourceFields
           importMode={importMode}
           linkedinProjectId={linkedinProjectId}
           onImportModeChange={setImportMode}
           onLinkedinProjectIdChange={setLinkedinProjectId}
-        />
+        />}
 
         {displayError && <ErrorMessage message={displayError} />}
 
@@ -166,8 +222,8 @@ export function ProjectFormModal({ mode, closeTo, currentUserId, project, onSave
           <Link className={secondaryButtonClasses} to={closeTo}>
             Cancel
           </Link>
-          <button className={primaryButtonClasses} type="submit" disabled={submitting || loadingUsers}>
-            {submitting ? 'Saving' : mode === 'create' ? 'Create Project' : 'Save'}
+          <button className={primaryButtonClasses} type="submit" disabled={submitting || loadingUsers || Boolean(simulatorProjects && !simulatorProject)}>
+            {submitting ? 'Saving' : simulatorProjects ? 'Import and Track Project' : mode === 'create' ? 'Create Project' : 'Save'}
           </button>
         </div>
       </form>

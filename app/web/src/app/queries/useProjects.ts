@@ -16,7 +16,7 @@ export function useProjects(currentUserId: string, filters: ProjectQueryFilters 
 
   return useQuery({
     queryKey: projectsQueryKey(currentUserId, normalizedFilters),
-    queryFn: () => listProjects(normalizedFilters),
+    queryFn: ({ signal }) => listProjects(normalizedFilters, signal),
   })
 }
 

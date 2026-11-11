@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import type { AuthSession } from '../auth/auth'
 import { ErrorMessage } from '../components/feedback/ErrorMessage'
-import type { AuthSession } from '../domain/types'
 import { CandidateDetailPage } from '../pages/candidate-detail/CandidateDetailPage'
 import { ProjectPipelinePage } from '../pages/project-pipeline/ProjectPipelinePage'
 import { ProjectsPage } from '../pages/projects/ProjectsPage'

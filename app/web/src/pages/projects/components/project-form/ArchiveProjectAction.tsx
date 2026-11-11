@@ -8,7 +8,7 @@ interface ArchiveProjectActionProps {
   onConfirm: () => void | Promise<void>
 }
 
-const secondaryButtonClasses = 'inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border border-border-strong bg-white px-[13px] font-extrabold text-ink no-underline'
+const secondaryButtonClasses = 'inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border button button-secondary px-[13px] font-extrabold no-underline'
 
 export function ArchiveProjectAction({ project, submitting, onConfirm }: ArchiveProjectActionProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -28,11 +28,11 @@ export function ArchiveProjectAction({ project, submitting, onConfirm }: Archive
               : 'This project has no accepted offer yet and will move to Archived Projects.'}
           </p>
           <div className="flex justify-end gap-2.5">
-            <button className="min-h-[34px] rounded-md" type="button" onClick={() => setConfirmOpen(false)}>
+            <button className="min-h-[34px] rounded-md button button-secondary border px-3" type="button" onClick={() => setConfirmOpen(false)}>
               Cancel
             </button>
             <button
-              className="inline-flex min-h-[34px] items-center justify-center gap-2 rounded-md border border-danger bg-danger px-3 font-extrabold text-white"
+              className="inline-flex min-h-[34px] items-center justify-center gap-2 rounded-md border button button-danger px-3 font-extrabold"
               type="button"
               onClick={() => void onConfirm()}
               disabled={submitting}

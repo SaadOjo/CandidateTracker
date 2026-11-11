@@ -1,5 +1,10 @@
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { PrismaClient, Role } from '@prisma/client'
-import type { FastifyRequest } from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
+import { z } from 'zod'
+
+const SESSION_COOKIE_NAME = 'candidate_tracker_session'
+const SESSION_DURATION_MS = 24 * 60 * 60 * 1000
 
 export type AppRole = 'admin' | 'human_resource' | 'hiring_manager'
 
@@ -11,8 +16,27 @@ export interface AuthSession {
   appRole: AppRole
 }
 
+export interface DevelopmentUser {
+  id: string
+  email: string
+  name: string
+  role: Role
+}
+
+export const LoginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(1),
+})
+
 export interface AuthService {
   getSession(request: FastifyRequest): Promise<AuthSession>
+  login(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    input: z.infer<typeof LoginSchema>,
+  ): Promise<AuthSession>
+  logout(request: FastifyRequest, reply: FastifyReply): Promise<void>
+  listDevelopmentUsers(): Promise<DevelopmentUser[]>
   requireAppRole(request: FastifyRequest, allowedRoles: AppRole[]): Promise<AuthSession>
 }
 
@@ -25,42 +49,113 @@ export class AuthError extends Error {
   }
 }
 
-export function createDummyAuthService(prisma: PrismaClient): AuthService {
-  return new DummyAuthService(prisma)
+export function createAuthService(prisma: PrismaClient, developmentPassword: string): AuthService {
+  if (!developmentPassword) throw new Error('Development authentication requires a password')
+  return new DevelopmentAuthService(prisma, developmentPassword)
 }
 
-class DummyAuthService implements AuthService {
-  constructor(private prisma: PrismaClient) {}
+class DevelopmentAuthService implements AuthService {
+  private sessions = new WeakMap<FastifyRequest, AuthSession>()
+
+  constructor(
+    private prisma: PrismaClient,
+    private developmentPassword: string,
+  ) {}
 
   async getSession(request: FastifyRequest): Promise<AuthSession> {
-    const userId = getHeaderValue(request, 'x-dev-user-id') ?? process.env.DEV_AUTH_USER_ID
-    const user = userId ? await this.findActiveUserById(userId) : await this.findDefaultUser()
+    const cached = this.sessions.get(request)
+    if (cached) return cached
+    const token = request.cookies[SESSION_COOKIE_NAME]
+    if (!token) throw new AuthError(401, 'Authentication required')
 
-    if (!user) throw new AuthError(401, 'Dev auth user not found or inactive')
+    const session = await this.prisma.webSession.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: {
+        user: {
+          select: { id: true, email: true, name: true, role: true, active: true },
+        },
+      },
+    })
 
-    return {
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      appRole: toAppRole(user.role),
+    if (!session) throw new AuthError(401, 'Authentication required')
+    if (session.expiresAt.getTime() <= Date.now() || !session.user.active) {
+      await this.prisma.webSession.deleteMany({ where: { id: session.id } })
+      throw new AuthError(401, 'Authentication required')
     }
+
+    const authenticated = toAuthSession(session.user)
+    this.sessions.set(request, authenticated)
+    return authenticated
   }
 
-  private findActiveUserById(userId: string) {
-    return this.prisma.user.findFirst({
-      where: { id: userId, active: true },
+  async login(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    input: z.infer<typeof LoginSchema>,
+  ): Promise<AuthSession> {
+    if (!passwordsMatch(input.password, this.developmentPassword)) {
+      throw new AuthError(401, 'Invalid email or password')
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: input.email, active: true },
       select: { id: true, email: true, name: true, role: true },
+    })
+    if (!user) throw new AuthError(401, 'Invalid email or password')
+
+    const token = randomBytes(32).toString('base64url')
+    const expiresAt = new Date(Date.now() + SESSION_DURATION_MS)
+    const currentToken = request.cookies[SESSION_COOKIE_NAME]
+
+    await this.prisma.$transaction(async (transaction) => {
+      if (currentToken) {
+        await transaction.webSession.deleteMany({
+          where: { tokenHash: hashToken(currentToken) },
+        })
+      }
+      await transaction.webSession.deleteMany({
+        where: { expiresAt: { lte: new Date() } },
+      })
+      await transaction.webSession.create({
+        data: {
+          tokenHash: hashToken(token),
+          userId: user.id,
+          expiresAt,
+        },
+      })
+    })
+
+    reply.setCookie(SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+      expires: expiresAt,
+    })
+
+    return toAuthSession(user)
+  }
+
+  async logout(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const token = request.cookies[SESSION_COOKIE_NAME]
+    if (token) {
+      await this.prisma.webSession.deleteMany({
+        where: { tokenHash: hashToken(token) },
+      })
+    }
+
+    reply.clearCookie(SESSION_COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
     })
   }
 
-  private findDefaultUser() {
-    return this.prisma.user.findFirst({
-      where: {
-        active: true,
-        role: { in: ['admin', 'human_resource'] },
-      },
-      orderBy: { createdAt: 'asc' },
+  listDevelopmentUsers(): Promise<DevelopmentUser[]> {
+    return this.prisma.user.findMany({
+      where: { active: true },
+      orderBy: { name: 'asc' },
       select: { id: true, email: true, name: true, role: true },
     })
   }
@@ -74,14 +169,29 @@ class DummyAuthService implements AuthService {
   }
 }
 
-function getHeaderValue(request: FastifyRequest, headerName: string) {
-  const value = request.headers[headerName]
-  if (Array.isArray(value)) return value[0]
-  return value
+function toAuthSession(user: { id: string; email: string; name: string; role: Role }): AuthSession {
+  return {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    appRole: toAppRole(user.role),
+  }
 }
 
 function toAppRole(role: Role): AppRole {
   if (role === 'admin') return 'admin'
   if (role === 'human_resource') return 'human_resource'
-  return 'hiring_manager'
+  if (role === 'hiring_manager') return 'hiring_manager'
+  throw new Error(`Unsupported role: ${String(role)}`)
+}
+
+function hashToken(token: string) {
+  return createHash('sha256').update(token).digest('hex')
+}
+
+function passwordsMatch(input: string, expected: string) {
+  const inputHash = createHash('sha256').update(input).digest()
+  const expectedHash = createHash('sha256').update(expected).digest()
+  return timingSafeEqual(inputHash, expectedHash)
 }

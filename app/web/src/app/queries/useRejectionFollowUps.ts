@@ -17,7 +17,7 @@ export function useRejectionFollowUps(currentUserId: string, filters: RejectionF
 
   return useQuery({
     queryKey: rejectionFollowUpsQueryKey(currentUserId, normalizedFilters),
-    queryFn: () => listRejectionFollowUps(normalizedFilters),
+    queryFn: ({ signal }) => listRejectionFollowUps(normalizedFilters, signal),
   })
 }
 

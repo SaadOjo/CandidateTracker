@@ -26,25 +26,30 @@ export const hrRubricRatings = [
   { value: 'above_expectation', label: 'Above expectation' },
 ] as const
 
-export function buildNoteInput(role: 'human_resource' | 'hiring_manager', candidate: Candidate, textNote: string, formNote: Record<string, string>): CandidateNoteInput | null {
-  if (role === 'human_resource' && (candidate.stage === 'hr_interview' || candidate.stage === 'pre_interview')) {
+export function usesStructuredNote(role: 'human_resource' | 'hiring_manager', candidate: Candidate, existingNote?: CandidateNote) {
+  return existingNote ? Boolean(existingNote.fields?.length) : role === 'human_resource' && (candidate.stage === 'hr_interview' || candidate.stage === 'pre_interview')
+}
+
+export function buildNoteInput(role: 'human_resource' | 'hiring_manager', candidate: Candidate, textNote: string, formNote: Record<string, string>, existingNote?: CandidateNote): CandidateNoteInput | null {
+  if (usesStructuredNote(role, candidate, existingNote)) {
     const fields = buildHrRubricFields(formNote)
     if (fields.length === 0) return null
     return {
-      fields,
-      visibility: 'all',
+      fields: fields.map((field) => ({ ...field, visibility: existingNote?.fields?.find((saved) => saved.question === field.question)?.visibility ?? field.visibility })),
+      ...(existingNote?.body ? { body: existingNote.body } : {}),
+      visibility: existingNote?.visibility ?? 'all',
     }
   }
 
   if (!textNote.trim()) return null
   return {
     body: textNote.trim(),
-    visibility: 'all',
+    visibility: existingNote?.visibility ?? 'all',
   }
 }
 
-export function hasNoteDraftContent(role: 'human_resource' | 'hiring_manager', candidate: Candidate, textNote: string, formNote: Record<string, string>) {
-  if (role === 'human_resource' && (candidate.stage === 'hr_interview' || candidate.stage === 'pre_interview')) {
+export function hasNoteDraftContent(role: 'human_resource' | 'hiring_manager', candidate: Candidate, textNote: string, formNote: Record<string, string>, existingNote?: CandidateNote) {
+  if (usesStructuredNote(role, candidate, existingNote)) {
     return buildHrRubricFields(formNote).length > 0
   }
 
@@ -223,9 +228,11 @@ const redundantActivitySubtitles = new Set([
 ])
 
 export function getActivitySubtext(item: CandidateActivityEvent) {
-  const actor = getActivityActorLabel(item)
   const subtitle = item.subtitle?.trim()
   if (subtitle && !redundantActivitySubtitles.has(subtitle)) return subtitle
+
+  if (!item.actor) return ''
+  const actor = getActivityActorLabel(item)
 
   if (item.title.startsWith('Moved to')) return `Moved by ${actor}`
   if (item.title.includes('Scheduled')) return `Scheduled by ${actor}`
@@ -252,10 +259,6 @@ function formatUserRole(role: UserRole) {
   throw new Error(`Unsupported user role: ${String(role)}`)
 }
 
-export function notifyCandidateChanged() {
-  window.dispatchEvent(new Event('candidate-tracker:candidate-changed'))
-}
-
 export function formatSource(source: Candidate['source']) {
   if (source === 'linkedin') return 'LinkedIn'
   if (source === 'referral') return 'Referral'
@@ -280,6 +283,18 @@ export function defaultInterviewDate() {
   date.setDate(date.getDate() + 2)
   date.setHours(10, 0, 0, 0)
   return date
+}
+
+export function defaultContactDate(now = new Date()) {
+  const date = new Date(now)
+  date.setMinutes(Math.floor(date.getMinutes() / 15) * 15, 0, 0)
+  return date
+}
+
+export function isQuarterHourDateTime(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):(00|15|30|45)$/.test(value)) return false
+  const date = new Date(value)
+  return !Number.isNaN(date.getTime()) && toDateTimeLocalValue(date) === value
 }
 
 export function toDateTimeLocalValue(date: Date) {

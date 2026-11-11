@@ -53,15 +53,25 @@ export const CandidateTransitionSchema = z.object({
   occurredAt: z.coerce.date().optional(),
   interviewStartAt: z.coerce.date().optional(),
   meetingUrl: OptionalTextSchema,
+}).superRefine((input, context) => {
+  const scheduling = input.action === 'schedule_department_interview' || input.action === 'schedule_hr_interview'
+  const contact = scheduling || ['mark_contact_successful', 'mark_not_reached', 'withdraw'].includes(input.action)
+  if (contact && !input.occurredAt) context.addIssue({ code: 'custom', path: ['occurredAt'], message: 'Contact date and time are required' })
+  if (scheduling) {
+    if (!input.interviewStartAt) context.addIssue({ code: 'custom', path: ['interviewStartAt'], message: 'Interview date and time are required' })
+    if (!input.meetingUrl) context.addIssue({ code: 'custom', path: ['meetingUrl'], message: 'Meeting link is required' })
+  }
+})
+
+export const NoteFieldSchema = z.object({
+  question: z.string().trim().min(1),
+  answer: z.string().trim().min(1),
+  visibility: z.enum(['all', 'human_resource_only']),
 })
 
 export const UpsertCandidateNoteSchema = z.object({
   body: OptionalTextSchema,
-  fields: z.array(z.object({
-    question: z.string().trim().min(1),
-    answer: z.string().trim().min(1),
-    visibility: z.enum(['all', 'human_resource_only']).default('all'),
-  })).optional(),
+  fields: z.array(NoteFieldSchema).optional(),
   visibility: z.enum(['all', 'human_resource_only']).default('all'),
 }).refine(
   (value) => Boolean(value.body) || Boolean(value.fields?.length),

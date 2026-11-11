@@ -17,9 +17,9 @@ interface RejectionFiltersProps {
   onToggleStatusMenu: () => void
 }
 
-const filterButtonClasses = 'inline-flex h-11 items-center gap-[42px] rounded border-0 bg-surface-muted px-4 font-bold text-ink'
+const filterButtonClasses = 'inline-flex h-11 items-center gap-[42px] rounded border-0 button button-secondary px-4 font-bold'
 const menuClasses = 'absolute top-[calc(100%+8px)] left-0 z-30 grid min-w-[220px] max-w-[360px] gap-1.5 rounded-lg border border-border bg-white p-2 shadow-popover'
-const menuButtonClasses = 'flex h-auto w-full items-center justify-between gap-3 rounded border-0 bg-transparent px-3 py-2.5 text-left text-[13px] font-semibold text-ink'
+const menuButtonClasses = 'flex h-auto w-full items-center justify-between gap-3 rounded border-0 control-selectable px-3 py-2.5 text-left text-[13px] font-semibold'
 
 export function RejectionFilters({
   query,
@@ -60,12 +60,12 @@ export function RejectionFilters({
         </button>
         {projectMenuOpen && (
           <div className={`${menuClasses} max-h-80 overflow-y-auto`}>
-            <button className={`${menuButtonClasses} ${projectFilter === 'all' ? 'bg-accent-soft' : ''}`} type="button" onClick={() => onProjectFilterChange('all')}>
+            <button className={menuButtonClasses} aria-pressed={projectFilter === 'all'} type="button" onClick={() => onProjectFilterChange('all')}>
               Projects: All
             </button>
             {projects.map((project) => (
-              <button className={`${menuButtonClasses} ${projectFilter === project.id ? 'bg-accent-soft' : ''}`} key={project.id} type="button" onClick={() => onProjectFilterChange(project.id)}>
-                <span><span className="text-muted">{formatProjectStatus(project)}</span> — {project.name}</span>
+              <button className={menuButtonClasses} aria-pressed={projectFilter === project.id} key={project.id} type="button" onClick={() => onProjectFilterChange(project.id)}>
+                <span>{formatProjectStatus(project)} — {project.name}</span>
               </button>
             ))}
           </div>
@@ -79,9 +79,9 @@ export function RejectionFilters({
         </button>
         {statusMenuOpen && (
           <div className={menuClasses}>
-            <button className={`${menuButtonClasses} ${statusFilter === 'all' ? 'bg-accent-soft' : ''}`} type="button" onClick={() => onStatusFilterChange('all')}>Status: All</button>
-            <button className={`${menuButtonClasses} ${statusFilter === 'waiting_for_contact' ? 'bg-accent-soft' : ''}`} type="button" onClick={() => onStatusFilterChange('waiting_for_contact')}>Waiting for Contact</button>
-            <button className={`${menuButtonClasses} ${statusFilter === 'handled' ? 'bg-accent-soft' : ''}`} type="button" onClick={() => onStatusFilterChange('handled')}>Rejection Handled</button>
+            <button className={menuButtonClasses} aria-pressed={statusFilter === 'all'} type="button" onClick={() => onStatusFilterChange('all')}>Status: All</button>
+            <button className={menuButtonClasses} aria-pressed={statusFilter === 'waiting_for_contact'} type="button" onClick={() => onStatusFilterChange('waiting_for_contact')}>Waiting for Contact</button>
+            <button className={menuButtonClasses} aria-pressed={statusFilter === 'handled'} type="button" onClick={() => onStatusFilterChange('handled')}>Rejection Handled</button>
           </div>
         )}
       </div>

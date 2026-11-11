@@ -1,11 +1,9 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ErrorMessage } from '../../components/feedback/ErrorMessage'
 import { stageLabels } from '../../domain/labels'
-import { candidateQueryKey, useCandidate } from '../queries/useCandidate'
-import { projectQueryKey, useProject } from '../queries/useProject'
+import { useCandidate } from '../queries/useCandidate'
+import { useProject } from '../queries/useProject'
 
 const crumbClasses = 'pt-[3px] leading-7'
 const mutedCrumbClasses = `${crumbClasses} text-muted no-underline`
@@ -20,7 +18,6 @@ export function Breadcrumbs({
   pathname: string
   search: string
 }) {
-  const queryClient = useQueryClient()
   const projectId = pathname.match(/\/projects\/([^/]+)/)?.[1]
   const candidateId = pathname.match(/\/candidates\/([^/?]+)/)?.[1]
   const stage = pathname.match(/\/pipeline\/([^/?]+)/)?.[1]
@@ -37,20 +34,6 @@ export function Breadcrumbs({
   const project = projectQuery.data ?? null
   const candidate = candidateQuery.data ?? null
 
-  useEffect(() => {
-    function refreshCrumbs() {
-      if (projectId) {
-        void queryClient.invalidateQueries({ queryKey: projectQueryKey(currentUserId, projectId) })
-      }
-      if (candidateId) {
-        void queryClient.invalidateQueries({ queryKey: candidateQueryKey(currentUserId, candidateId) })
-      }
-    }
-
-    window.addEventListener('candidate-tracker:candidate-changed', refreshCrumbs)
-    return () => window.removeEventListener('candidate-tracker:candidate-changed', refreshCrumbs)
-  }, [candidateId, currentUserId, projectId, queryClient])
-
   if (isRejectionSource && !candidateId) {
     throw new Error('Rejection-source breadcrumb requires a candidate ID')
   }
@@ -64,7 +47,7 @@ export function Breadcrumbs({
   const rejectionSourceCandidate = isRejectionSource ? candidate : null
 
   return (
-    <div className="flex items-center gap-3 text-base text-muted" aria-label="Breadcrumb">
+    <div className="flex min-w-0 flex-wrap items-center gap-3 break-words text-base text-muted" aria-label="Breadcrumb">
       {isRejection ? (
         <span className={activeCrumbClasses}>Rejection Follow-Up</span>
       ) : rejectionSourceCandidate ? (

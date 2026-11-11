@@ -36,6 +36,19 @@
   --color-action-icon: #454c50;
   --color-nav-active: #aeb6b7;
 
+  /* Interactive states derive from the palette above. */
+  --color-action-primary-hover: var(--color-heading);
+  --color-action-primary-pressed: color-mix(in srgb, var(--color-heading) 80%, var(--color-black));
+  --color-action-secondary-hover: color-mix(in srgb, var(--color-surface-action) 50%, var(--color-border-strong));
+  --color-action-secondary-pressed: var(--color-border-strong);
+  --color-action-danger-hover: color-mix(in srgb, var(--color-danger) 82%, var(--color-heading));
+  --color-action-danger-pressed: color-mix(in srgb, var(--color-danger) 65%, var(--color-heading));
+  --color-action-disabled-background: var(--color-surface-muted);
+  --color-action-disabled-text: var(--color-muted);
+  --color-action-disabled-border: var(--color-border);
+  --color-action-on-dark: var(--color-white);
+  --color-action-focus: var(--color-accent);
+
   /* Accent and state colors */
   --color-accent: #005bc2;
   --color-accent-strong: #2c6071;
@@ -92,7 +105,10 @@
 
   button:disabled {
     cursor: not-allowed;
-    opacity: 0.6;
+  }
+
+  input:is([type="checkbox"], [type="radio"]) {
+    accent-color: var(--color-action-primary);
   }
 
   code {
@@ -100,5 +116,137 @@
     background: var(--color-surface-neutral);
     color: var(--color-ink);
     padding: 2px 6px;
+  }
+}
+
+@layer components {
+  .date-time-input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-compact);
+    background-color: var(--color-white);
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color-scheme: light;
+  }
+
+  .date-time-input:hover {
+    border-color: var(--color-action-secondary);
+  }
+
+  .date-time-input:focus-visible {
+    outline: 2px solid var(--color-action-focus);
+    outline-offset: 3px;
+  }
+
+  /* Layout stays with the control; these classes own every interactive color. */
+  .button,
+  .control-selectable {
+    background-color: var(--control-background);
+    color: var(--control-text);
+    border-color: var(--control-border);
+    cursor: pointer;
+    transition: background-color 120ms, color 120ms, border-color 120ms;
+  }
+
+  .button-primary {
+    --control-background: var(--color-action-primary);
+    --control-text: var(--color-action-on-dark);
+    --control-border: var(--color-action-primary);
+    --control-hover: var(--color-action-primary-hover);
+    --control-pressed: var(--color-action-primary-pressed);
+  }
+
+  .button-secondary {
+    --control-background: var(--color-surface-action);
+    --control-text: var(--color-ink);
+    --control-border: var(--color-border-strong);
+    --control-hover: var(--color-action-secondary-hover);
+    --control-pressed: var(--color-action-secondary-pressed);
+  }
+
+  .button-danger {
+    --control-background: var(--color-danger);
+    --control-text: var(--color-action-on-dark);
+    --control-border: var(--color-danger);
+    --control-hover: var(--color-action-danger-hover);
+    --control-pressed: var(--color-action-danger-pressed);
+  }
+
+  .button-text,
+  .control-selectable {
+    --control-background: transparent;
+    --control-text: var(--color-ink);
+    --control-border: transparent;
+    --control-hover: var(--color-action-secondary-hover);
+    --control-pressed: var(--color-action-secondary-pressed);
+  }
+
+  .control-selectable:is([aria-current="page"], [aria-pressed="true"]) {
+    --control-background: var(--color-action-primary);
+    --control-text: var(--color-action-on-dark);
+    --control-border: var(--color-action-primary);
+    --control-hover: var(--color-action-primary-hover);
+    --control-pressed: var(--color-action-primary-pressed);
+  }
+
+  .pipeline-stage {
+    --control-text: var(--color-body);
+    --control-hover: var(--color-surface-muted);
+    --control-pressed: var(--color-surface-action);
+  }
+
+  .control-selectable.pipeline-stage[aria-current="page"] {
+    --control-background: var(--color-surface-action);
+    --control-text: var(--color-heading);
+    --control-border: var(--color-action-primary);
+    --control-hover: var(--color-action-secondary-hover);
+    --control-pressed: var(--color-action-secondary-pressed);
+  }
+
+  :is(.button, .control-selectable):hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--control-hover);
+  }
+
+  :is(.button, .control-selectable):active:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--control-pressed);
+  }
+
+  :is(.button, .control-selectable):focus-visible {
+    outline: 2px solid var(--color-action-focus);
+    outline-offset: 3px;
+  }
+
+  :is(.button, .control-selectable):is(:disabled, [aria-disabled="true"]) {
+    background-color: var(--color-action-disabled-background);
+    color: var(--color-action-disabled-text);
+    border-color: var(--color-action-disabled-border);
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  .selection-count {
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink);
+  }
+
+  [aria-current="page"] .selection-count {
+    background-color: var(--color-action-secondary);
+    color: var(--color-action-on-dark);
+  }
+
+  .pipeline-stage .selection-count {
+    background-color: var(--color-surface-closed);
+    color: var(--color-body);
+  }
+
+  .pipeline-stage[aria-current="page"] .selection-count {
+    background-color: var(--color-action-primary);
+    color: var(--color-action-on-dark);
   }
 }

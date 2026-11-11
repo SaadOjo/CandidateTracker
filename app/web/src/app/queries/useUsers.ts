@@ -4,6 +4,6 @@ import { listUsers } from '../../data/api'
 export function useUsers(currentUserId: string) {
   return useQuery({
     queryKey: ['users', currentUserId],
-    queryFn: () => listUsers(),
+    queryFn: ({ signal }) => listUsers(undefined, signal),
   })
 }

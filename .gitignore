@@ -16,3 +16,6 @@ app/screenshots/
 .env
 .env.*
 !.env.example
+
+# Private local snapshots, including local configuration
+archive/backups/

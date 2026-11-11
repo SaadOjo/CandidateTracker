@@ -1,3 +1,5 @@
+import { DateTimeField } from '../../../../components/ui/DateTimeField'
+
 interface ContactAttemptOption<T extends string> {
   value: T
   label: string
@@ -50,15 +52,13 @@ export function ContactAttemptFields<T extends string>({
       </div>
 
       <div className={sectionClasses}>
-        <h2 className={sectionHeadingClasses}>Attempt Date &amp; Time*</h2>
-        <input className={fieldClasses} type="datetime-local" value={attemptedAt} onChange={(event) => onAttemptedAtChange(event.target.value)} />
+        <DateTimeField label="Attempt Date & Time" value={attemptedAt} onChange={onAttemptedAtChange} />
       </div>
 
       {interview && (
         <>
           <div className={sectionClasses}>
-            <h2 className={sectionHeadingClasses}>Interview Date &amp; Time*</h2>
-            <input className={fieldClasses} type="datetime-local" value={interview.startAt} onChange={(event) => interview.onStartAtChange(event.target.value)} />
+            <DateTimeField label="Interview Date & Time" value={interview.startAt} onChange={interview.onStartAtChange} />
           </div>
           <div className={sectionClasses}>
             <h2 className={sectionHeadingClasses}>Meeting URL*</h2>

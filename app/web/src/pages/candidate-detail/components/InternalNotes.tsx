@@ -1,14 +1,19 @@
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Pencil } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { CandidateNote } from '../../../domain/types'
+import type { Candidate, CandidateNoteInput } from '../../../domain/types'
+import type { AuthSession } from '../../../auth/auth'
+import { CandidateNoteEditor } from './candidate-notes/CandidateNoteEditor'
 import { formatDateTime, formatNoteAuthor, groupNotesByRole } from '../candidateDetailHelpers'
 
 interface InternalNotesProps {
-  notes: CandidateNote[]
+  candidate: Candidate
+  session: AuthSession
+  onSave: (input: CandidateNoteInput) => Promise<void>
   role: 'human_resource' | 'hiring_manager'
 }
 
-export function InternalNotes({ notes, role }: InternalNotesProps) {
+export function InternalNotes({ candidate, session, onSave, role }: InternalNotesProps) {
+  const notes = candidate.notes
   const visibleNotes = useMemo(
     () => notes.filter((note) => {
       const visibility = requireVisibility(note.visibility, `candidate note ${note.id}`)
@@ -18,12 +23,13 @@ export function InternalNotes({ notes, role }: InternalNotesProps) {
   )
   const groupedNotes = useMemo(() => groupNotesByRole(visibleNotes), [visibleNotes])
   const [collapsedNotes, setCollapsedNotes] = useState<Record<string, boolean>>({})
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
 
   if (visibleNotes.length === 0) return null
 
   return (
-    <section className="mt-[26px] w-[min(694px,100%)]">
-      <h2 className="mt-0 mb-[27px] flex items-center gap-2 text-xs font-extrabold tracking-[0.12em] text-faint uppercase"><i className="h-1.5 w-1.5 rounded-full bg-divider-strong" />Internal Notes</h2>
+    <section className="min-w-0 rounded-lg border border-border bg-white p-6 max-[760px]:p-4">
+      <h2 className="mt-0 mb-5 text-xs font-extrabold tracking-[0.12em] text-muted uppercase">Internal Notes</h2>
       <div className="grid gap-6">
         {groupedNotes.map((group) => (
           <section className="grid gap-3" key={group.role}>
@@ -34,23 +40,32 @@ export function InternalNotes({ notes, role }: InternalNotesProps) {
                 return role === 'human_resource' || visibility === 'all'
               })
               const collapsed = collapsedNotes[note.id] ?? true
+              const editing = editingNoteId === note.id
               return (
                 <article className={`rounded-panel bg-surface-muted px-6 ${collapsed ? 'py-3.5' : 'py-[22px]'}`} key={note.id}>
-                  <div className={`flex items-center justify-between gap-4 ${collapsed ? 'mb-0' : 'mb-3.5'}`}>
+                  <div className={`flex flex-wrap items-center justify-between gap-4 ${collapsed ? 'mb-0' : 'mb-3.5'}`}>
                     <span className="w-fit bg-white px-2 py-1 text-[11px] font-extrabold text-muted uppercase">{formatNoteAuthor(note)}</span>
                     <div className="inline-flex items-center gap-2.5">
                       <time className="text-xs text-faint">{formatDateTime(note.updatedAt)}</time>
-                      <button
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-white text-muted"
+                      {note.author.id === session.userId && !editing && (
+                        <button className="inline-flex h-7 w-7 items-center justify-center rounded-full border button button-secondary" type="button" aria-label="Edit your note" title="Edit note" onClick={() => setEditingNoteId(note.id)}>
+                          <Pencil size={14} aria-hidden="true" />
+                        </button>
+                      )}
+                      {!editing && <button
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border button button-secondary"
                         type="button"
                         aria-label={collapsed ? 'Expand note' : 'Collapse note'}
+                        aria-expanded={!collapsed}
                         onClick={() => setCollapsedNotes((current) => ({ ...current, [note.id]: !collapsed }))}
                       >
                         <ChevronDown className={`transition-transform ${collapsed ? '' : 'rotate-180'}`} size={16} />
-                      </button>
+                      </button>}
                     </div>
                   </div>
-                  {!collapsed && (
+                  {editing ? (
+                    <CandidateNoteEditor embedded candidate={candidate} role={role} session={session} onSave={onSave} onClose={() => { setEditingNoteId(null); setCollapsedNotes((current) => ({ ...current, [note.id]: false })) }} />
+                  ) : !collapsed && (
                     visibleFields.length > 0 ? (
                       <div className="grid gap-3.5">
                         {visibleFields.map((field) => (

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RSC Test Workspace</title>
+    <link rel="icon" href="/mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="/" class="brand"><img src="/mark.svg" width="28" height="28" alt="">RSC Test Workspace</a>
+      <span class="environment">Local simulator</span>
+    </header>
+    <main>
+      <div class="project-picker"><label for="project-select">Project</label><select id="project-select" disabled></select></div>
+      <p class="eyebrow">FICTIONAL RECRUITER PROJECT</p>
+      <div class="project-heading">
+        <div><h1 id="project-name">Loading project</h1><p id="project-meta" class="muted"></p></div>
+        <dl class="project-facts"><div><dt>Requisition</dt><dd id="requisition"></dd></div><div><dt>Owner</dt><dd id="owner"></dd></div></dl>
+      </div>
+      <div class="destination"><span class="status-dot"></span><strong>Local project source</strong><span>RSC API version <span id="version"></span></span></div>
+      <div class="project-export-toolbar">
+        <div><strong id="project-export-status" role="status">Not exported</strong><small id="project-export-time" class="muted"></small></div>
+        <a id="project-download" href="/simulator/project-download" download hidden>Download Last Export</a>
+        <button id="export-project" type="button" class="primary" disabled>Export Project</button>
+      </div>
+      <nav class="tabs" aria-label="Project views">
+        <button type="button" class="tab active" id="candidates-tab" aria-pressed="true">Candidates <span id="candidate-count">0</span></button>
+        <button type="button" class="tab" id="exports-tab" aria-pressed="false">RSC exports <span id="export-count">0</span></button>
+      </nav>
+      <p id="error" role="alert" hidden></p>
+      <p id="notice" role="status" class="notice"></p>
+      <section id="candidates-view" aria-label="Candidates">
+        <div class="candidate-layout">
+          <div class="candidate-list">
+            <div class="list-toolbar"><input id="search" type="search" aria-label="Search candidates" placeholder="Search candidates"><span id="result-count" class="muted"></span></div>
+            <div class="list-heading"><label><input id="select-all" type="checkbox"> Select visible</label><span id="selected-count"></span></div>
+            <ul id="candidate-list"></ul>
+            <p id="empty" class="empty" hidden>No matching candidates.</p>
+          </div>
+          <aside class="candidate-detail" aria-label="Candidate details">
+            <div id="profile"></div>
+            <form id="export-form">
+              <label for="notes">Export notes</label>
+              <textarea id="notes" maxlength="2000" rows="4" placeholder="Optional notes"></textarea>
+              <button id="prepare" type="submit" disabled>Prepare RSC Export</button>
+            </form>
+          </aside>
+        </div>
+      </section>
+      <section id="exports-view" aria-label="Prepared exports" hidden>
+        <div class="history-header"><h2>Export requests</h2><span class="muted">Current session</span></div>
+        <ul id="export-list"></ul>
+        <p id="no-exports" class="empty">No prepared exports.</p>
+      </section>
+    </main>
+    <dialog id="inspector" aria-labelledby="inspector-title">
+      <div class="dialog-header"><h2 id="inspector-title">Prepared export</h2><button id="close-inspector" type="button">Close</button></div>
+      <dl class="export-facts"><div><dt>Request ID</dt><dd id="request-id"></dd></div><div><dt>Expires</dt><dd id="expires"></dd></div></dl>
+      <div class="inspector-toolbar">
+        <label for="payload-type">Payload</label>
+        <select id="payload-type"><option value="notification">Notification</option><option value="response">Candidate response</option><option value="request">Retrieval request</option><option value="headers">Notification headers</option></select>
+        <button id="download" type="button">Download JSON</button>
+      </div>
+      <pre id="payload" tabindex="0"></pre>
+      <div class="verify-row"><button id="verify" type="button" class="primary">Test retrieval API</button><span id="verification" role="status"></span></div>
+    </dialog>
+  </body>
+</html>

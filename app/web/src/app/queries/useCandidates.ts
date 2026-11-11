@@ -6,13 +6,14 @@ export function candidatesQueryKey(currentUserId: string, filters: CandidateFilt
   return ['candidates', currentUserId, 'list', normalizeCandidateFilters(filters)] as const
 }
 
-export function useCandidates(currentUserId: string, filters: CandidateFilters = {}, enabled = true) {
+export function useCandidates(currentUserId: string, filters: CandidateFilters = {}, enabled = true, poll = false) {
   const normalizedFilters = normalizeCandidateFilters(filters)
 
   return useQuery({
     queryKey: candidatesQueryKey(currentUserId, normalizedFilters),
-    queryFn: () => listCandidates(normalizedFilters),
+    queryFn: ({ signal }) => listCandidates(normalizedFilters, signal),
     enabled,
+    refetchInterval: poll ? 5000 : false,
   })
 }
 

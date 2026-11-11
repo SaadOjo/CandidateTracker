@@ -10,7 +10,7 @@ interface BasicCommentModalProps {
   onSave: (body: string) => Promise<void>
 }
 
-const actionClasses = 'inline-flex h-9 min-w-[88px] items-center justify-center rounded border border-border bg-white text-xs font-bold text-body no-underline'
+const actionClasses = 'inline-flex h-9 min-w-[88px] items-center justify-center rounded border button text-xs font-bold no-underline'
 
 export function BasicCommentModal({ title, closeTo, initialValue, onSave }: BasicCommentModalProps) {
   const navigate = useNavigate()
@@ -38,8 +38,8 @@ export function BasicCommentModal({ title, closeTo, initialValue, onSave }: Basi
         {error && <ErrorMessage message={error} />}
         <textarea className="min-h-[180px] w-full resize-y rounded border-0 bg-surface-muted px-4 py-3.5 text-sm leading-5 text-muted outline-0" value={value} onChange={(event) => setValue(event.target.value)} placeholder="Type your comment here..." />
         <div className="mt-[18px] flex justify-end gap-3">
-          <Link className={actionClasses} to={closeTo}>Cancel</Link>
-          <button className={actionClasses} disabled={saving} type="button" onClick={() => void save()}>
+          <Link className={`${actionClasses} button-secondary`} to={closeTo}>Cancel</Link>
+          <button className={`${actionClasses} button-primary`} disabled={saving} type="button" onClick={() => void save()}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

@@ -40,7 +40,7 @@ export function RejectionFollowUpTable({ rows, total }: RejectionFollowUpTablePr
             />
             <time dateTime={followUp.eligibleAt}>{formatEligibleDate(followUp.eligibleAt)}</time>
             <Link
-              className="inline-flex h-[30px] min-w-14 items-center justify-center rounded-sm border border-border bg-white text-xs font-bold text-heading no-underline"
+              className="inline-flex h-[30px] min-w-14 items-center justify-center rounded-sm border button button-secondary text-xs font-bold no-underline"
               to={`/projects/${followUp.projectId}/candidates/${followUp.candidate.id}?source=rejection`}
             >
               View

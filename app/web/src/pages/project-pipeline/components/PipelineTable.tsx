@@ -1,10 +1,10 @@
-import { Phone } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Eye, ListPlus, Phone } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { LoadingState } from '../../../components/feedback/LoadingState'
 import { Avatar } from '../../../components/ui/Avatar'
 import { StatusIndicator } from '../../../components/ui/StatusIndicator'
 import type { StatusIndicatorTone } from '../../../components/ui/StatusIndicator'
-import { stageLabels, statusLabels } from '../../../domain/labels'
+import { statusLabels } from '../../../domain/labels'
 import type { Candidate, CandidateStatus, PipelineStage } from '../../../domain/types'
 import { formatDate, formatTime, getOfferRankLabel, showAddLog } from '../pipelineHelpers'
 import type { PipelineColumn } from '../pipelineHelpers'
@@ -16,7 +16,6 @@ interface PipelineTableProps {
   projectId: string
   role: 'human_resource' | 'hiring_manager'
   stage: PipelineStage
-  totalCandidates: number
 }
 
 const statusTones: Record<CandidateStatus, StatusIndicatorTone> = {
@@ -37,70 +36,83 @@ const statusTones: Record<CandidateStatus, StatusIndicatorTone> = {
 
 function getGridClasses(role: 'human_resource' | 'hiring_manager', stage: PipelineStage) {
   if (stage === 'pre_interview' || stage === 'manager_review' || (role === 'hiring_manager' && stage === 'offer_stage')) {
-    return 'grid-cols-[minmax(250px,1.22fr)_minmax(150px,0.72fr)_minmax(132px,0.64fr)]'
+    return 'grid-cols-[minmax(250px,1.22fr)_minmax(150px,0.72fr)_minmax(190px,0.64fr)]'
   }
   if (role === 'hiring_manager' && (stage === 'department_interview' || stage === 'hr_interview')) {
-    return 'grid-cols-[minmax(250px,1.22fr)_minmax(138px,0.72fr)_minmax(155px,0.78fr)_minmax(132px,0.64fr)]'
+    return 'grid-cols-[minmax(250px,1.22fr)_minmax(138px,0.72fr)_minmax(155px,0.78fr)_minmax(190px,0.64fr)]'
   }
   if (stage === 'department_interview' || stage === 'hr_interview') {
-    return 'grid-cols-[minmax(230px,1.18fr)_minmax(135px,0.72fr)_minmax(84px,0.42fr)_minmax(150px,0.78fr)_minmax(132px,0.64fr)]'
+    return 'grid-cols-[minmax(230px,1.18fr)_minmax(135px,0.72fr)_minmax(84px,0.42fr)_minmax(150px,0.78fr)_minmax(190px,0.64fr)]'
   }
-  return 'grid-cols-[minmax(250px,1.22fr)_minmax(138px,0.72fr)_minmax(84px,0.42fr)_minmax(132px,0.64fr)]'
+  return 'grid-cols-[minmax(250px,1.22fr)_minmax(138px,0.72fr)_minmax(84px,0.42fr)_minmax(190px,0.64fr)]'
 }
 
-export function PipelineTable({ candidates, columns, loading, projectId, role, stage, totalCandidates }: PipelineTableProps) {
+export function PipelineTable({ candidates, columns, loading, projectId, role, stage }: PipelineTableProps) {
+  const location = useLocation()
+  const pipelineReturnTo = `${location.pathname}${location.search}${location.hash}`
   const gridClasses = getGridClasses(role, stage)
-  const rowClasses = `grid min-h-[89px] min-w-0 items-center gap-x-[clamp(16px,1.6vw,24px)] px-[clamp(28px,3vw,48px)] ${gridClasses}`
+  const rowClasses = `grid min-w-0 items-center gap-x-[clamp(16px,1.6vw,24px)] px-6 max-[760px]:px-4 ${gridClasses}`
+  const tableWidthClasses = columns.length === 5 ? 'min-w-[1040px]' : columns.length === 4 ? 'min-w-[860px]' : 'min-w-[700px]'
 
   return (
-    <section className="mx-auto mt-[30px] min-h-[507px] w-[min(1320px,calc(100vw-330px))] max-w-full overflow-x-auto overflow-y-hidden rounded-md bg-white max-[1100px]:w-[calc(100vw-48px)] max-[760px]:w-full">
-      <div className={`${rowClasses} min-h-10 border-b border-divider text-[10px] font-extrabold tracking-[0.12em] text-body uppercase`}>
-        {columns.includes('candidate') && <span className="flex justify-start text-left">Candidate Name</span>}
-        {columns.includes('status') && <span className="flex justify-center text-center">Status</span>}
-        {columns.includes('contact') && <span className="flex justify-center justify-self-center text-center">Contact</span>}
-        {columns.includes('interview') && <span className="flex justify-center text-center">Interview Info</span>}
-        {columns.includes('actions') && <span className="flex justify-center text-center">Actions</span>}
-      </div>
+    <section className="w-full overflow-x-auto overflow-y-hidden rounded-b-lg bg-surface-subtle">
+      <div className={tableWidthClasses}>
+        <div className={`${rowClasses} min-h-10 border-b border-border text-[10px] font-extrabold tracking-[0.12em] text-muted uppercase`}>
+          {columns.includes('candidate') && <span className="flex justify-start text-left">Candidate Name</span>}
+          {columns.includes('status') && <span className="flex justify-center text-center">Status</span>}
+          {columns.includes('contact') && <span className="flex justify-center justify-self-center text-center">Contact</span>}
+          {columns.includes('interview') && <span className="flex justify-center text-center">Interview Info</span>}
+          {columns.includes('actions') && <span className="flex justify-center text-center">Actions</span>}
+        </div>
 
-      {loading ? (
-        <LoadingState className="min-h-[180px] px-12 py-7" />
-      ) : candidates.length > 0 ? (
-        candidates.map((candidate, index) => (
-          <div className={rowClasses} key={candidate.id}>
-            {columns.includes('candidate') && (
-              <Link className="flex items-center justify-self-start gap-3 pl-2 text-left text-inherit no-underline" to={`/projects/${projectId}/candidates/${candidate.id}`}>
-                {stage === 'offer_stage' && getOfferRankLabel(index) && <small>{getOfferRankLabel(index)}</small>}
-                <Avatar name={candidate.name} />
-                <div>
-                  <strong className="block text-sm leading-5 text-heading">{candidate.name}</strong>
-                  <small className="block text-[13px] leading-[18px] text-muted">{candidate.appliedAgo ?? 'Imported candidate'}</small>
-                </div>
-              </Link>
-            )}
-            {columns.includes('status') && <StatusCell candidate={candidate} stage={stage} />}
-            {columns.includes('contact') && <ContactCell candidate={candidate} />}
-            {columns.includes('interview') && <InterviewCell candidate={candidate} />}
-            {columns.includes('actions') && (
-              <div className="flex items-center justify-self-center gap-2.5">
-                <Link className="inline-flex h-[30px] min-w-14 items-center justify-center rounded-sm border border-border bg-white px-2.5 text-xs font-extrabold text-heading no-underline" to={`/projects/${projectId}/candidates/${candidate.id}`}>View</Link>
-                {showAddLog(role, stage, candidate.status) && (
-                  <Link className="inline-flex h-[30px] min-w-14 items-center justify-center rounded-sm border-0 bg-action-primary px-2.5 text-xs font-extrabold text-white no-underline" to={`/projects/${projectId}/candidates/${candidate.id}?modal=log-contact`}>
-                    Add Log
+        {loading ? (
+          <LoadingState className="min-h-[180px] px-12 py-7" />
+        ) : candidates.length > 0 ? (
+          candidates.map((candidate, index) => (
+            <div className={`${rowClasses} min-h-[89px] border-b border-divider last:border-b-0`} key={candidate.id}>
+              {columns.includes('candidate') && (
+                <Link className="flex items-center justify-self-start gap-3 text-left text-inherit no-underline" to={`/projects/${projectId}/candidates/${candidate.id}`}>
+                  {stage === 'offer_stage' && getOfferRankLabel(index) && <small>{getOfferRankLabel(index)}</small>}
+                  <Avatar name={candidate.name} />
+                  <div>
+                    <strong className="block text-sm leading-5 text-heading">{candidate.name}</strong>
+                    <small className="block text-[13px] leading-[18px] text-muted">{candidate.appliedAgo ?? 'Imported candidate'}</small>
+                  </div>
+                </Link>
+              )}
+              {columns.includes('status') && <StatusCell candidate={candidate} stage={stage} />}
+              {columns.includes('contact') && <ContactCell candidate={candidate} pipelineReturnTo={pipelineReturnTo} />}
+              {columns.includes('interview') && <InterviewCell candidate={candidate} />}
+              {columns.includes('actions') && (
+                <div className="flex items-center justify-self-center gap-2.5">
+                  <Link
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border button button-secondary no-underline"
+                    to={`/projects/${projectId}/candidates/${candidate.id}`}
+                    aria-label={`View ${candidate.name}`}
+                    title="View candidate"
+                  >
+                    <Eye size={17} aria-hidden="true" />
                   </Link>
-                )}
-              </div>
-            )}
-          </div>
-        ))
-      ) : (
-        <p className="m-0 flex min-h-[180px] items-center gap-2 px-12 py-7 text-muted">No candidates in this stage.</p>
-      )}
+                  {showAddLog(role, stage, candidate.status) && (
+                    <Link
+                      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border button button-primary no-underline"
+                      to={`/projects/${projectId}/candidates/${candidate.id}?modal=log-contact`}
+                      state={{ pipelineReturnTo }}
+                      aria-label={`Add log for ${candidate.name}`}
+                      title="Add log"
+                    >
+                      <ListPlus size={17} aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="m-0 flex min-h-[180px] items-center gap-2 px-12 py-7 text-muted">No candidates in this stage.</p>
+        )}
 
-      <footer className="flex h-[59px] items-center bg-surface-subtle px-8 text-[13px] text-muted">
-        <span>
-          Showing {candidates.length} candidates in {stageLabels[stage]} · {totalCandidates} total in project
-        </span>
-      </footer>
+      </div>
     </section>
   )
 }
@@ -117,10 +129,10 @@ function StatusCell({ candidate, stage }: { candidate: Candidate; stage: Pipelin
   return <StatusIndicator className="justify-self-center text-[13px] font-extrabold" label={status} tone={tone} />
 }
 
-function ContactCell({ candidate }: { candidate: Candidate }) {
+function ContactCell({ candidate, pipelineReturnTo }: { candidate: Candidate; pipelineReturnTo: string }) {
   return (
-    <Link className="flex h-8 w-8 items-center justify-center justify-self-center" to={`/projects/${candidate.projectId}/candidates/${candidate.id}?modal=contact-card`} aria-label={`Open contact info for ${candidate.name}`}>
-      <Phone className="text-muted" size={22} strokeWidth={1.8} />
+    <Link className="button button-text rounded flex h-8 w-8 items-center justify-center justify-self-center" to={`/projects/${candidate.projectId}/candidates/${candidate.id}?modal=contact-card`} state={{ pipelineReturnTo }} aria-label={`Open contact info for ${candidate.name}`}>
+      <Phone size={22} strokeWidth={1.8} />
     </Link>
   )
 }

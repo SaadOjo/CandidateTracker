@@ -15,7 +15,7 @@ export function RouteModal({ closeTo, className = '', showCloseButton = false, c
       <Link className="fixed inset-0 z-0" to={closeTo} aria-label="Close modal" />
       <div className={`relative z-[1] max-h-[calc(100vh-64px)] overflow-auto rounded-lg shadow-modal ${className}`}>
         {showCloseButton && (
-          <Link className="absolute top-[18px] right-[18px] z-[3] grid h-[34px] w-[34px] place-items-center rounded-full bg-surface-muted text-ink" to={closeTo} aria-label="Close modal">
+          <Link className="absolute top-[18px] right-[18px] z-[3] grid h-[34px] w-[34px] place-items-center rounded-full button button-secondary" to={closeTo} aria-label="Close modal">
             <X size={18} />
           </Link>
         )}

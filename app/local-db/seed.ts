@@ -1,6 +1,10 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 
+if (process.env.NODE_ENV !== 'development' || process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+  throw new Error('Seeding deletes all records. Set NODE_ENV=development and ALLOW_DESTRUCTIVE_SEED=true only for a disposable local database.')
+}
+
 const prisma = new PrismaClient()
 
 async function clearDatabase() {

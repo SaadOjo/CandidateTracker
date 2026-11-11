@@ -5,17 +5,17 @@ interface HrInterviewNoteFormProps {
   onChange: (next: Record<string, string>) => void
 }
 
-const noteInputClasses = 'min-h-[92px] w-full rounded border-0 bg-white px-4 py-3.5 text-[13px] leading-5 text-muted outline-0'
+const noteInputClasses = 'min-h-24 w-full rounded border border-border bg-surface-subtle px-3 py-2.5 text-sm leading-5 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-focus'
 
 export function HrInterviewNoteForm({ values, onChange }: HrInterviewNoteFormProps) {
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-3 gap-x-4 gap-y-5">
       {hrRubricItems.map((item) => (
-        <fieldset className="m-0 grid gap-2.5 rounded-md border border-muted/45 p-3" key={item}>
-          <legend className="px-1 text-xs font-extrabold text-ink">{item}</legend>
+        <fieldset className="m-0 grid min-w-0 content-start gap-3 border-0 p-0" key={item}>
+          <legend className="mb-3 min-h-10 p-0 text-sm leading-5 font-bold text-ink">{item}</legend>
           <label className="grid gap-2">
             <span className="text-xs font-extrabold text-body">Rating</span>
-            <select className="min-h-[38px] w-full rounded border-0 bg-white px-3 text-[13px] leading-5 text-muted outline-0" value={values[`${item} rating`] ?? ''} onChange={(event) => onChange({ ...values, [`${item} rating`]: event.target.value })}>
+            <select className="min-h-10 w-full rounded border border-border bg-surface-subtle px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-focus" value={values[`${item} rating`] ?? ''} onChange={(event) => onChange({ ...values, [`${item} rating`]: event.target.value })}>
               <option value="">Select rating</option>
               {hrRubricRatings.map((rating) => (
                 <option key={rating.value} value={rating.value}>{rating.label}</option>

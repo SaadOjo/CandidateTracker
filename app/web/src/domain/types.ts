@@ -65,14 +65,6 @@ export interface User {
   active: boolean
 }
 
-export interface AuthSession {
-  userId: string
-  email: string
-  name: string
-  role: UserRole
-  appRole: SessionAppRole
-}
-
 export interface Project {
   id: string
   name: string
@@ -90,6 +82,15 @@ export interface Project {
   createdAt: string
   archivedAt?: string | null
   stageComments?: ProjectStageComment[]
+  simulatorTracking?: {
+    sourceProjectId: string
+    integrationContext: string
+    sourceStage: 'shortlisted'
+    lastSyncedAt: string | null
+    lastError: string | null
+    sourceCandidateCount: number
+    matchingCandidateCount: number
+  } | null
 }
 
 export interface ProjectFormInput {
